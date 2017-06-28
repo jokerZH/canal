@@ -23,7 +23,7 @@ import com.alibaba.otter.canal.common.zookeeper.ZkClientx;
 import com.alibaba.otter.canal.common.zookeeper.ZookeeperPathUtils;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 
-/* clinet running控制 */
+/* clinet running控制, 多个任务同时启动的时候 保证只有一个任务启动 */
 public class ClientRunningMonitor extends AbstractCanalLifeCycle {
     private static final Logger logger = LoggerFactory.getLogger(ClientRunningMonitor.class);
 
@@ -127,24 +127,17 @@ public class ClientRunningMonitor extends AbstractCanalLifeCycle {
                 }
             }
         } catch (ZkNoNodeException e) {
-            zkClient.createPersistent(ZookeeperPathUtils.getClientIdNodePath(this.destination, clientData.getClientId()),
-                    true); // 尝试创建父节点
+            zkClient.createPersistent(ZookeeperPathUtils.getClientIdNodePath(this.destination, clientData.getClientId()), true); // 尝试创建父节点
             initRunning();
         } catch (Throwable t) {
-            logger.error(MessageFormat.format("There is an error when execute initRunning method, with destination [{0}].",
-                    destination),
-                    t);
+            logger.error(MessageFormat.format("There is an error when execute initRunning method, with destination [{0}].", destination), t);
             // 出现任何异常尝试release
             releaseRunning();
             throw new CanalClientException("something goes wrong in initRunning method. ", t);
         }
     }
 
-    /**
-     * 阻塞等待自己成为active，如果自己成为active，立马返回
-     *
-     * @throws InterruptedException
-     */
+    /* 阻塞等待自己成为active，如果自己成为active，立马返回 */
     public void waitForActive() throws InterruptedException {
         initRunning();
         mutex.get();
@@ -198,6 +191,7 @@ public class ClientRunningMonitor extends AbstractCanalLifeCycle {
         return address.equals(clientData.getAddress());
     }
 
+    /* TODO 触发另外一个 */
     private void processActiveEnter() {
         if (listener != null) {
             // 触发回调，建立与server的socket链接
@@ -205,8 +199,7 @@ public class ClientRunningMonitor extends AbstractCanalLifeCycle {
             String address = connectAddress.getAddress().getHostAddress() + ":" + connectAddress.getPort();
             this.clientData.setAddress(address);
 
-            String path = ZookeeperPathUtils.getDestinationClientRunning(this.destination,
-                    this.clientData.getClientId());
+            String path = ZookeeperPathUtils.getDestinationClientRunning(this.destination, this.clientData.getClientId());
             // 序列化
             byte[] bytes = JsonUtils.marshalToByte(clientData);
             zkClient.writeData(path, bytes);

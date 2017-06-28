@@ -24,7 +24,6 @@ import com.alibaba.otter.canal.protocol.exception.CanalClientException;
  * @version 1.0.0
  */
 public class ClusterNodeAccessStrategy implements CanalNodeAccessStrategy {
-
     private IZkChildListener                 childListener;                                      // 监听所有的服务器列表
     private IZkDataListener                  dataListener;                                       // 监听当前的工作节点
     private ZkClientx                        zkClient;
@@ -113,5 +112,4 @@ public class ClusterNodeAccessStrategy implements CanalNodeAccessStrategy {
     public ZkClientx getZkClient() {
         return zkClient;
     }
-
 }

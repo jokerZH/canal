@@ -26,7 +26,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  *     // do something
  * }
  * </pre>
- * 
+ *
  * @author jianghang 2011-9-23 上午09:58:03
  * @version 1.0.0
  */

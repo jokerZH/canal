@@ -7,20 +7,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 
-/**
- * @author zebin.xuzb @ 2012-6-20
- * @version 1.0.0
- */
+/*  */
 public class ClientIdentity implements Serializable {
+    private String destination; // TODO
+    private short  clientId;    // TODO
+    private String filter;      // binlog过滤
 
-    private String destination;
-    private short  clientId;
-    private String filter;
-
-    public ClientIdentity(){
-
-    }
-
+    public ClientIdentity() {}
     public ClientIdentity(String destination, short clientId){
         this.clientId = clientId;
         this.destination = destination;

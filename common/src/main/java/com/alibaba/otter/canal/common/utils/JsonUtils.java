@@ -17,11 +17,7 @@ import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
-/**
- * 字节处理相关工具类
- * 
- * @author jianghang
- */
+/* 字节处理相关工具类 */
 public class JsonUtils {
 
     static {
