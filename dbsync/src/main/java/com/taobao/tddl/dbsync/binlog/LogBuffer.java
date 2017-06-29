@@ -8,22 +8,14 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 
-/**
- * TODO: Document Me!!
- * 
- * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
- * @version 1.0
- */
+/* TODO */
 public class LogBuffer {
-
     protected byte[] buffer;
 
     protected int    origin, limit;
     protected int    position;
 
-    protected LogBuffer(){
-    }
-
+    protected LogBuffer(){ }
     public LogBuffer(byte[] buffer, final int origin, final int limit){
         if (origin + limit > buffer.length) throw new IllegalArgumentException("capacity excceed: " + (origin + limit));
 
@@ -33,9 +25,7 @@ public class LogBuffer {
         this.limit = limit;
     }
 
-    /**
-     * Return n bytes in this buffer.
-     */
+    /* Return len bytes from pos in this buffer. */
     public final LogBuffer duplicate(final int pos, final int len) {
         if (pos + len > limit) throw new IllegalArgumentException("limit excceed: " + (pos + len));
 
@@ -45,9 +35,7 @@ public class LogBuffer {
         return new LogBuffer(buf, 0, len);
     }
 
-    /**
-     * Return next n bytes in this buffer.
-     */
+    /*  Return next len bytes in this buffer. */
     public final LogBuffer duplicate(final int len) {
         if (position + len > origin + limit) throw new IllegalArgumentException("limit excceed: "
                                                                                 + (position + len - origin));
