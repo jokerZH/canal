@@ -7,22 +7,27 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
 /**
  * For binlog version 4. This event is saved by threads which read it, as they
  * need it for future use (to decode the ordinary events).
- * 
+ *
+ *
+ * Bytes         desc
+ * -----         ----
+ * 2             The binary log format version. This is 4 in MySQL 5.0 and up.
+ * 50            The MySQL server's version (example: 5.0.14-debug-log), padded with 0x00 bytes on the right.
+ * 4             Timestamp in seconds when this event was created. This value is redundant; the same value occurs in the timestamp header field.
+ * 1             The header length. This length gives the size of the extra headers field at the end of the header for other events.
+ * n             An array that indicates the post-header lengths for all event types. There is one byte per event type that the server knows about.
+ *
  * @see mysql-5.1.60/sql/log_event.cc - Format_description_log_event
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public final class FormatDescriptionLogEvent extends StartLogEventV3 {
-
-    /**
-     * The number of types we handle in Format_description_log_event
-     * (UNKNOWN_EVENT is not to be handled, it does not exist in binlogs, it
-     * does not have a format).
-     */
+    /* The number of types we handle in Format_description_log_event (不算UNKNOWN_EVENT) */
     public static final int   LOG_EVENT_TYPES                     = (ENUM_END_EVENT - 1);
-
+    /* 描述各个type的post header的长度的数组的起始偏移 */
     public static final int   ST_COMMON_HEADER_LEN_OFFSET         = (ST_SERVER_VER_OFFSET + ST_SERVER_VER_LEN + 4);
 
+    /* 各个版本固定长度header的大小 */
     public static final int   OLD_HEADER_LEN                      = 13;
     public static final int   LOG_EVENT_HEADER_LEN                = 19;
     public static final int   LOG_EVENT_MINIMAL_HEADER_LEN        = 19;
@@ -32,14 +37,7 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
     public static final int   LOAD_HEADER_LEN                     = (4 + 4 + 4 + 1 + 1 + 4);
     public static final int   SLAVE_HEADER_LEN                    = 0;
     public static final int   START_V3_HEADER_LEN                 = (2 + ST_SERVER_VER_LEN + 4);
-    public static final int   ROTATE_HEADER_LEN                   = 8;                                                       // this
-    // is
-    // FROZEN
-    // (the
-    // Rotate
-    // post-header
-    // is
-    // frozen)
+    public static final int   ROTATE_HEADER_LEN                   = 8;    // Rotate post-header is frozen
     public static final int   INTVAR_HEADER_LEN                   = 0;
     public static final int   CREATE_FILE_HEADER_LEN              = 4;
     public static final int   APPEND_BLOCK_HEADER_LEN             = 4;
@@ -64,31 +62,33 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
     public static final int   GTID_HEADER_LEN                     = 19;
     public static final int   GTID_LIST_HEADER_LEN                = 4;
 
+    /* TODO */
     public static final int   POST_HEADER_LENGTH                  = 11;
 
     public static final int   BINLOG_CHECKSUM_ALG_DESC_LEN        = 1;
     public static final int[] checksumVersionSplit                = { 5, 6, 1 };
-    public static final long  checksumVersionProduct              = (checksumVersionSplit[0] * 256 + checksumVersionSplit[1])
-                                                                    * 256 + checksumVersionSplit[2];
+    public static final long  checksumVersionProduct              = (checksumVersionSplit[0]*256 + checksumVersionSplit[1])*256 + checksumVersionSplit[2];
     /**
      * The size of the fixed header which _all_ events have (for binlogs written
      * by this version, this is equal to LOG_EVENT_HEADER_LEN), except
      * FORMAT_DESCRIPTION_EVENT and ROTATE_EVENT (those have a header of size
      * LOG_EVENT_MINIMAL_HEADER_LEN).
      */
-    protected final int       commonHeaderLen;
-    protected int             numberOfEventTypes;
+    protected final int       commonHeaderLen;      /* 固定头部的大小 */
+    protected int             numberOfEventTypes;   /* type的个数 */
 
     /** The list of post-headers' lengthes */
     protected final short[]   postHeaderLen;
     protected int[]           serverVersionSplit                  = new int[3];
 
-    public FormatDescriptionLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent)
-                                                                                                                    throws IOException{
+    // 从logBuffer读取数据
+    public FormatDescriptionLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent) throws IOException{
         /* Start_log_event_v3 */
         super(header, buffer, descriptionEvent);
 
+        /* postion指向post—header lenght数组开始的地方 */
         buffer.position(LOG_EVENT_MINIMAL_HEADER_LEN + ST_COMMON_HEADER_LEN_OFFSET);
+
         commonHeaderLen = buffer.getUint8();
         if (commonHeaderLen < OLD_HEADER_LEN) /* sanity check */
         {
@@ -104,28 +104,23 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
             postHeaderLen[i] = (short) buffer.getUint8();
         }
 
+        // 检测是否支持校验
         calcServerVersionSplit();
         long calc = getVersionProduct();
         if (calc >= checksumVersionProduct) {
-            /*
-             * the last bytes are the checksum alg desc and value (or value's
-             * room)
-             */
+            /* the last bytes are the checksum alg desc and value (or value's room) */
             numberOfEventTypes -= BINLOG_CHECKSUM_ALG_DESC_LEN;
         }
 
-        if (logger.isInfoEnabled()) logger.info("common_header_len= " + commonHeaderLen + ", number_of_event_types= "
-                                                + numberOfEventTypes);
+        if (logger.isInfoEnabled()) {
+            logger.info("common_header_len= " + commonHeaderLen + ", number_of_event_types= " + numberOfEventTypes);
+        }
     }
 
-    /** MySQL 5.0 format descriptions. */
-    public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_5_x   = new FormatDescriptionLogEvent(4);
-
-    /** MySQL 4.0.x (x>=2) format descriptions. */
-    public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_4_0_x = new FormatDescriptionLogEvent(3);
-
-    /** MySQL 3.23 format descriptions. */
-    public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_3_23  = new FormatDescriptionLogEvent(1);
+    public FormatDescriptionLogEvent(final int binlogVersion, int binlogChecksum){
+        this(binlogVersion);
+        this.header.checksumAlg = binlogChecksum;
+    }
 
     public static FormatDescriptionLogEvent getFormatDescription(final int binlogVersion) throws IOException {
         /* identify binlog format */
@@ -141,11 +136,12 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
         }
     }
 
-    public FormatDescriptionLogEvent(final int binlogVersion, int binlogChecksum){
-        this(binlogVersion);
-        this.header.checksumAlg = binlogChecksum;
-    }
-
+    /** MySQL 5.0 format descriptions. */
+    public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_5_x   = new FormatDescriptionLogEvent(4);
+    /** MySQL 4.0.x (x>=2) format descriptions. */
+    public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_4_0_x = new FormatDescriptionLogEvent(3);
+    /** MySQL 3.23 format descriptions. */
+    public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_3_23  = new FormatDescriptionLogEvent(1);
     public FormatDescriptionLogEvent(final int binlogVersion){
         this.binlogVersion = binlogVersion;
 
@@ -272,18 +268,10 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
         }
     }
 
-    public void calcServerVersionSplit() {
-        doServerVersionSplit(serverVersion, serverVersionSplit);
-    }
 
-    public long getVersionProduct() {
-        return versionProduct(serverVersionSplit);
-    }
 
-    public boolean isVersionBeforeChecksum() {
-        return getVersionProduct() < checksumVersionProduct;
-    }
-
+    // 将mysql的版本转化成int[]数组的形式
+    public void calcServerVersionSplit() { doServerVersionSplit(serverVersion, serverVersionSplit); }
     public static void doServerVersionSplit(String serverVersion, int[] versionSplit) {
         String[] split = serverVersion.split("\\.");
         if (split.length < 3) {
@@ -310,16 +298,9 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
         }
     }
 
-    public static long versionProduct(int[] versionSplit) {
-        return ((versionSplit[0] * 256 + versionSplit[1]) * 256 + versionSplit[2]);
-    }
-
-    public final int getCommonHeaderLen() {
-        return commonHeaderLen;
-    }
-
-    public final short[] getPostHeaderLen() {
-        return postHeaderLen;
-    }
-
+    public long getVersionProduct() { return versionProduct(serverVersionSplit); }
+    public boolean isVersionBeforeChecksum() { return getVersionProduct() < checksumVersionProduct; }
+    public static long versionProduct(int[] versionSplit) { return ((versionSplit[0] * 256 + versionSplit[1]) * 256 + versionSplit[2]); }
+    public final int getCommonHeaderLen() { return commonHeaderLen; }
+    public final short[] getPostHeaderLen() { return postHeaderLen; }
 }

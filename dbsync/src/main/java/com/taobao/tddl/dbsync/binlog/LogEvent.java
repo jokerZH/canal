@@ -25,6 +25,8 @@ import com.taobao.tddl.dbsync.binlog.event.LogHeader;
  * @see mysql-5.1.60/sql/log_event.h
  */
 public abstract class LogEvent {
+    protected static final Log logger = LogFactory.getLog(LogEvent.class);
+
     /*
      * 3 is MySQL 4.x; 4 is MySQL 5.0.0. Compared to version 3, version 4 has: -
      * a different Start_log_event, which includes info about the binary log
@@ -56,6 +58,7 @@ public abstract class LogEvent {
     public static final String SERVER_VERSION                           = "5.0";    /* Default 5.0 server version */
 
     /* Event header offsets; these point to places inside the fixed header */
+    public static final int    TIME_STAMP_OFFSET                        = 0;
     public static final int    EVENT_TYPE_OFFSET                        = 4;
     public static final int    SERVER_ID_OFFSET                         = 5;
     public static final int    EVENT_LEN_OFFSET                         = 9;
@@ -328,52 +331,11 @@ public abstract class LogEvent {
         }
     }
 
-    protected static final Log logger = LogFactory.getLog(LogEvent.class);
-
     protected final LogHeader  header;
-
-    protected LogEvent(LogHeader header){
-        this.header = header;
-    }
-
-    /**
-     * Return event header.
-     */
-    public final LogHeader getHeader() {
-        return header;
-    }
-
-    /**
-     * The total size of this event, in bytes. In other words, this is the sum
-     * of the sizes of Common-Header, Post-Header, and Body.
-     */
-    public final int getEventLen() {
-        return header.getEventLen();
-    }
-
-    /**
-     * Server ID of the server that created the event.
-     */
-    public final long getServerId() {
-        return header.getServerId();
-    }
-
-    /**
-     * The position of the next event in the master binary log, in bytes from
-     * the beginning of the file. In a binlog that is not a relay log, this is
-     * just the position of the next event, in bytes from the beginning of the
-     * file. In a relay log, this is the position of the next event in the
-     * master's binlog.
-     */
-    public final long getLogPos() {
-        return header.getLogPos();
-    }
-
-    /**
-     * The time when the query started, in seconds since 1970.
-     */
-    public final long getWhen() {
-        return header.getWhen();
-    }
-
+    protected LogEvent(LogHeader header){ this.header = header; }
+    public final LogHeader getHeader() { return header; }
+    public final int getEventLen() { return header.getEventLen(); }
+    public final long getServerId() { return header.getServerId(); }
+    public final long getLogPos() { return header.getLogPos(); }
+    public final long getWhen() { return header.getWhen(); }
 }

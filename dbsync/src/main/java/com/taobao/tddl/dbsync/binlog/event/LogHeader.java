@@ -92,10 +92,17 @@ public final class LogHeader {
     public LogHeader(final int type){ this.type = type; }
     /* 读取FormatDescriptionLogEvent数据包 */
     public LogHeader(LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent){
+        // logEvent.TIME_STAMP_OFFSET
         when = buffer.getUint32();
-        type = buffer.getUint8(); // LogEvent.EVENT_TYPE_OFFSET;
-        serverId = buffer.getUint32(); // LogEvent.SERVER_ID_OFFSET;
-        eventLen = (int) buffer.getUint32(); // LogEvent.EVENT_LEN_OFFSET;
+
+        // LogEvent.EVENT_TYPE_OFFSET;
+        type = buffer.getUint8();
+
+        // LogEvent.SERVER_ID_OFFSET;
+        serverId = buffer.getUint32();
+
+        // LogEvent.EVENT_LEN_OFFSET;
+        eventLen = (int) buffer.getUint32();
 
         if (descriptionEvent.binlogVersion == 1) {
             logPos = 0;
@@ -103,8 +110,8 @@ public final class LogHeader {
             return;
         }
 
-        /* 4.0 or newer */
-        logPos = buffer.getUint32(); // LogEvent.LOG_POS_OFFSET
+        // LogEvent.LOG_POS_OFFSET for 4.0 or newer
+        logPos = buffer.getUint32();
         /*
          * If the log is 4.0 (so here it can only be a 4.0 relay log read by the
          * SQL thread or a 4.0 master binlog read by the I/O thread), log_pos is
@@ -113,6 +120,8 @@ public final class LogHeader {
          * you know it if description_event is version 3 *and* you are not
          * reading a Format_desc (remember that mysqlbinlog starts by assuming
          * that 5.0 logs are in 4.0 format, until it finds a Format_desc).
+         * TODO 3以前记录的pos是当前binlog的偏移,而4记录的是下一个binlog的偏移，这里统一下,
+         * TODO 而logPos＝＝0的情况是特殊情况采用的，如rotate文件的时候
          */
         if (descriptionEvent.binlogVersion == 3 && type < LogEvent.FORMAT_DESCRIPTION_EVENT && logPos != 0) {
             /*
@@ -129,7 +138,8 @@ public final class LogHeader {
             logPos += eventLen; /* purecov: inspected */
         }
 
-        flags = buffer.getUint16(); // LogEvent.FLAGS_OFFSET
+        // LogEvent.FLAGS_OFFSET
+        flags = buffer.getUint16();
         if ((type == LogEvent.FORMAT_DESCRIPTION_EVENT) || (type == LogEvent.ROTATE_EVENT)) {
             /*
              * These events always have a header which stops here (i.e. their
