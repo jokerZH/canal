@@ -19,51 +19,29 @@ import com.taobao.tddl.dbsync.binlog.LogFetcher;
  * @version 1.0.0
  */
 public class DirectLogFetcher extends LogFetcher {
+    protected static final Logger logger = LoggerFactory.getLogger(DirectLogFetcher.class);
 
-    protected static final Logger logger            = LoggerFactory.getLogger(DirectLogFetcher.class);
+    public static final byte COM_BINLOG_DUMP = 18;  /* Command to dump binlog */
 
-    /** Command to dump binlog */
-    public static final byte      COM_BINLOG_DUMP   = 18;
+    public static final int NET_HEADER_SIZE = 4;    /* Packet header sizes */
+    public static final int SQLSTATE_LENGTH = 5;    /* sql状态string固定长度 */
 
-    /** Packet header sizes */
-    public static final int       NET_HEADER_SIZE   = 4;
-    public static final int       SQLSTATE_LENGTH   = 5;
+    public static final int PACKET_LEN_OFFSET = 0;  /* Packet offsets */
+    public static final int PACKET_SEQ_OFFSET = 3;  /* Packet seq */
 
-    /** Packet offsets */
-    public static final int       PACKET_LEN_OFFSET = 0;
-    public static final int       PACKET_SEQ_OFFSET = 3;
+    /* Maximum packet length */
+    public static final int MAX_PACKET_LENGTH = (256 * 256 * 256 - 1);
 
-    /** Maximum packet length */
-    public static final int       MAX_PACKET_LENGTH = (256 * 256 * 256 - 1);
+    private SocketChannel channel;
 
-    private SocketChannel         channel;
-
-    // private BufferedInputStream input;
-
-    public DirectLogFetcher(){
-        super(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR);
-    }
-
-    public DirectLogFetcher(final int initialCapacity){
-        super(initialCapacity, DEFAULT_GROWTH_FACTOR);
-    }
-
-    public DirectLogFetcher(final int initialCapacity, final float growthFactor){
-        super(initialCapacity, growthFactor);
-    }
+    public DirectLogFetcher() { super(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR); }
+    public DirectLogFetcher(final int initialCapacity) { super(initialCapacity, DEFAULT_GROWTH_FACTOR); }
+    public DirectLogFetcher(final int initialCapacity, final float growthFactor) { super(initialCapacity, growthFactor); }
 
     public void start(SocketChannel channel) throws IOException {
         this.channel = channel;
-        // 和mysql driver一样，提供buffer机制，提升读取binlog速度
-        // this.input = new
-        // BufferedInputStream(channel.socket().getInputStream(), 16384);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.taobao.tddl.dbsync.binlog.LogFetcher#fetch()
-     */
     public boolean fetch() throws IOException {
         try {
             // Fetching packet header from input.
@@ -93,17 +71,17 @@ public class DirectLogFetcher extends LogFetcher {
                     String sqlstate = forward(1).getFixString(SQLSTATE_LENGTH);
                     String errmsg = getFixString(limit - position);
                     throw new IOException("Received error packet:" + " errno = " + errno + ", sqlstate = " + sqlstate
-                                          + " errmsg = " + errmsg);
+                            + " errmsg = " + errmsg);
                 } else if (mark == 254) {
                     // Indicates end of stream. It's not clear when this would
                     // be sent.
                     logger.warn("Received EOF packet from server, apparent"
-                                + " master disconnected. It's may be duplicate slaveId , check instance config");
+                            + " master disconnected. It's may be duplicate slaveId , check instance config");
                     return false;
                 } else {
                     // Should not happen.
                     throw new IOException("Unexpected response " + mark + " while fetching binlog: packet #" + netnum
-                                          + ", len = " + netlen);
+                            + ", len = " + netlen);
                 }
             }
 
@@ -157,24 +135,9 @@ public class DirectLogFetcher extends LogFetcher {
             }
         }
 
-        // for (int count, n = 0; n < len; n += count) {
-        // if (0 > (count = input.read(buffer, off + n, len - n))) {
-        // // Reached end of input stream
-        // return false;
-        // }
-        // }
-
         if (limit < off + len) limit = off + len;
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.taobao.tddl.dbsync.binlog.LogFetcher#close()
-     */
-    public void close() throws IOException {
-        // do nothing
-    }
-
+    public void close() throws IOException { }
 }

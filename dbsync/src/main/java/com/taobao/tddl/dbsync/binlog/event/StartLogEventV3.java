@@ -16,7 +16,6 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  * @version 1.0
  */
 public class StartLogEventV3 extends LogEvent {
-
     /**
      * We could have used SERVER_VERSION_LENGTH, but this introduces an obscure
      * dependency - if somebody decided to change SERVER_VERSION_LENGTH this

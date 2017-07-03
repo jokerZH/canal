@@ -8,12 +8,13 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 
-/* TODO */
+/* 网络数据读取 */
 public class LogBuffer {
     protected byte[] buffer;
 
-    protected int    origin, limit;
-    protected int    position;
+    protected int   origin;     // 数据开始的地方
+    protected int   limit;      // 数据大小
+    protected int   position;   // 当前读取的位置
 
     protected LogBuffer(){ }
     public LogBuffer(byte[] buffer, final int origin, final int limit){
@@ -1020,7 +1021,7 @@ public class LogBuffer {
                 return getUint24();
             default: /* Must be 254 when here */
                 final long value = getUint32();
-                position += 4; /* ignore other */
+                position += 4; /* ignore other TODO */
                 return value;
         }
     }
@@ -1043,7 +1044,7 @@ public class LogBuffer {
     }
 
     /**
-     * Return fix length string from buffer.
+     * Return fix length string from buffer. 返回\0结尾的字符串
      */
     public final String getFixString(final int pos, final int len, String charsetName) {
         if (pos + len > limit || pos < 0) throw new IllegalArgumentException("limit excceed: "
@@ -1089,6 +1090,7 @@ public class LogBuffer {
     /**
      * Return fix-length string from buffer without null-terminate checking. Fix
      * bug #17 {@link https://github.com/AlibabaTech/canal/issues/17 }
+     * 返回 pos开始长度为len的字符串
      */
     public final String getFullString(final int pos, final int len, String charsetName) {
         if (pos + len > limit || pos < 0) throw new IllegalArgumentException("limit excceed: "
@@ -1105,6 +1107,7 @@ public class LogBuffer {
      * Return next fix-length string from buffer without null-terminate
      * checking. Fix bug #17 {@link https
      * ://github.com/AlibabaTech/canal/issues/17 }
+     * 返回 pos开始长度为len的字符串
      */
     public final String getFullString(final int len, String charsetName) {
         if (position + len > origin + limit) throw new IllegalArgumentException("limit excceed: "
@@ -1135,6 +1138,7 @@ public class LogBuffer {
 
     /**
      * Return dynamic length string from buffer.
+     * 返回由第一个字节指定长度的字符串
      */
     public final String getString(final int pos, String charsetName) {
         if (pos >= limit || pos < 0) throw new IllegalArgumentException("limit excceed: " + pos);
@@ -1152,6 +1156,7 @@ public class LogBuffer {
 
     /**
      * Return next dynamic length string from buffer.
+     * 返回由第一个字节指定长度的字符串
      */
     public final String getString(String charsetName) {
         if (position >= origin + limit) throw new IllegalArgumentException("limit excceed: " + position);
@@ -1210,6 +1215,8 @@ public class LogBuffer {
 
     /**
      * Return big decimal from buffer.
+     *
+     * TODO bin decimal的定义是什么
      * 
      * @see mysql-5.1.60/strings/decimal.c - bin2decimal()
      */

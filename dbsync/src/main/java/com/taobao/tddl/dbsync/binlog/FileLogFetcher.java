@@ -9,8 +9,6 @@ import java.util.Arrays;
 import com.taobao.tddl.dbsync.binlog.event.FormatDescriptionLogEvent;
 
 /**
- * TODO: Document It!!
- * 
  * <pre>
  * FileLogFetcher fetcher = new FileLogFetcher();
  * fetcher.open(file, 0);
@@ -25,68 +23,44 @@ import com.taobao.tddl.dbsync.binlog.event.FormatDescriptionLogEvent;
  * }
  * // file ending reached.
  * </pre>
- * 
+ *
+ * 从文件读取binlog数据
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public final class FileLogFetcher extends LogFetcher {
-
     public static final byte[] BINLOG_MAGIC = { -2, 0x62, 0x69, 0x6e };
 
     private FileInputStream    fin;
 
-    public FileLogFetcher(){
-        super(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR);
-    }
+    public FileLogFetcher(){ super(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR); }
+    public FileLogFetcher(final int initialCapacity){ super(initialCapacity, DEFAULT_GROWTH_FACTOR); }
+    public FileLogFetcher(final int initialCapacity, final float growthFactor){ super(initialCapacity, growthFactor); }
 
-    public FileLogFetcher(final int initialCapacity){
-        super(initialCapacity, DEFAULT_GROWTH_FACTOR);
-    }
-
-    public FileLogFetcher(final int initialCapacity, final float growthFactor){
-        super(initialCapacity, growthFactor);
-    }
-
-    /**
-     * Open binlog file in local disk to fetch.
-     */
-    public void open(File file) throws FileNotFoundException, IOException {
-        open(file, 0L);
-    }
-
-    /**
-     * Open binlog file in local disk to fetch.
-     */
-    public void open(String filePath) throws FileNotFoundException, IOException {
-        open(new File(filePath), 0L);
-    }
-
-    /**
-     * Open binlog file in local disk to fetch.
-     */
-    public void open(String filePath, final long filePosition) throws FileNotFoundException, IOException {
-        open(new File(filePath), filePosition);
-    }
-
-    /**
-     * Open binlog file in local disk to fetch.
-     */
+    /* Open binlog file in local disk to fetch. */
+    public void open(File file) throws FileNotFoundException, IOException { open(file, 0L); }
+    /* Open binlog file in local disk to fetch. */
+    public void open(String filePath) throws FileNotFoundException, IOException { open(new File(filePath), 0L); }
+    /* Open binlog file in local disk to fetch. */
+    public void open(String filePath, final long filePosition) throws FileNotFoundException, IOException { open(new File(filePath), filePosition); }
+    /* Open binlog file in local disk to fetch. */
     public void open(File file, final long filePosition) throws FileNotFoundException, IOException {
         fin = new FileInputStream(file);
 
         ensureCapacity(BIN_LOG_HEADER_SIZE);
         if (BIN_LOG_HEADER_SIZE != fin.read(buffer, 0, BIN_LOG_HEADER_SIZE)) throw new IOException("No binlog file header");
 
-        if (buffer[0] != BINLOG_MAGIC[0] || buffer[1] != BINLOG_MAGIC[1] || buffer[2] != BINLOG_MAGIC[2]
-            || buffer[3] != BINLOG_MAGIC[3]) {
-            throw new IOException("Error binlog file header: "
-                                  + Arrays.toString(Arrays.copyOf(buffer, BIN_LOG_HEADER_SIZE)));
+        if (buffer[0] != BINLOG_MAGIC[0]
+                || buffer[1] != BINLOG_MAGIC[1]
+                || buffer[2] != BINLOG_MAGIC[2]
+                || buffer[3] != BINLOG_MAGIC[3]) {
+            throw new IOException("Error binlog file header: " + Arrays.toString(Arrays.copyOf(buffer, BIN_LOG_HEADER_SIZE)));
         }
 
         limit = 0;
         origin = 0;
         position = 0;
-
         if (filePosition > BIN_LOG_HEADER_SIZE) {
             final int maxFormatDescriptionEventLen = FormatDescriptionLogEvent.LOG_EVENT_MINIMAL_HEADER_LEN
                                                      + FormatDescriptionLogEvent.ST_COMMON_HEADER_LEN_OFFSET

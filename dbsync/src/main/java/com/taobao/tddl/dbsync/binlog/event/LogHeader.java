@@ -11,57 +11,29 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  * different format and length even for different events of the same type. The
  * binary formats of Post-Header and Body are documented separately in each
  * subclass. The binary format of Common-Header is as follows.
- * <table>
- * <caption>Common-Header</caption>
- * <tr>
- * <th>Name</th>
- * <th>Format</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td>timestamp</td>
- * <td>4 byte unsigned integer</td>
- * <td>The time when the query started, in seconds since 1970.</td>
- * </tr>
- * <tr>
- * <td>type</td>
- * <td>1 byte enumeration</td>
- * <td>See enum #Log_event_type.</td>
- * </tr>
- * <tr>
- * <td>server_id</td>
- * <td>4 byte unsigned integer</td>
- * <td>Server ID of the server that created the event.</td>
- * </tr>
- * <tr>
- * <td>total_size</td>
- * <td>4 byte unsigned integer</td>
- * <td>The total size of this event, in bytes. In other words, this is the sum
- * of the sizes of Common-Header, Post-Header, and Body.</td>
- * </tr>
- * <tr>
- * <td>master_position</td>
- * <td>4 byte unsigned integer</td>
- * <td>The position of the next event in the master binary log, in bytes from
- * the beginning of the file. In a binlog that is not a relay log, this is just
- * the position of the next event, in bytes from the beginning of the file. In a
- * relay log, this is the position of the next event in the master's binlog.</td>
- * </tr>
- * <tr>
- * <td>flags</td>
- * <td>2 byte bitfield</td>
- * <td>See Log_event::flags.</td>
- * </tr>
- * </table>
- * Summing up the numbers above, we see that the total size of the common header
- * is 19 bytes.
+ *
+ * Common-Header
+ *
+ * Bytes            type        desc
+ * -----            ----        ----
+ * 4                timestamp   The time when the query started, in seconds since 1970
+ * 1                byte        Log_event_type
+ * 4                unsigned    server id
+ * 4                unsigned    The total size of this event, in bytes. Common-Header, Post-Header, and Body
+ * 4                unsigned    master_position. The position of the next event in the master binary log, in bytes from
+ *                              the beginning of the file. In a binlog that is not a relay log, this is just
+ *                              the position of the next event, in bytes from the beginning of the file. In a
+ *                              relay log, this is the position of the next event in the master's binlog.
+ * 2                bit field   flags See Log_event::flags.
+ *
+ * Summing up the numbers above, we see that the total size of the common header is 19 bytes.
  * 
  * @see mysql-5.1.60/sql/log_event.cc
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public final class LogHeader {
-
+    /* The different types of log events. */
     protected final int type;
 
     /**
@@ -110,16 +82,15 @@ public final class LogHeader {
      * event.
      */
     protected int       checksumAlg;
+
     /**
      * Placeholder for event checksum while writing to binlog.
      */
     protected long      crc;        // ha_checksum
 
     /* for Start_event_v3 */
-    public LogHeader(final int type){
-        this.type = type;
-    }
-
+    public LogHeader(final int type){ this.type = type; }
+    /* 读取FormatDescriptionLogEvent数据包 */
     public LogHeader(LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent){
         when = buffer.getUint32();
         type = buffer.getUint8(); // LogEvent.EVENT_TYPE_OFFSET;
@@ -213,65 +184,17 @@ public final class LogHeader {
         /* otherwise, go on with reading the header from buf (nothing now) */
     }
 
-    /**
-     * The different types of log events.
-     */
-    public final int getType() {
-        return type;
-    }
-
-    /**
-     * The position of the next event in the master binary log, in bytes from
-     * the beginning of the file. In a binlog that is not a relay log, this is
-     * just the position of the next event, in bytes from the beginning of the
-     * file. In a relay log, this is the position of the next event in the
-     * master's binlog.
-     */
-    public final long getLogPos() {
-        return logPos;
-    }
-
-    /**
-     * The total size of this event, in bytes. In other words, this is the sum
-     * of the sizes of Common-Header, Post-Header, and Body.
-     */
-    public final int getEventLen() {
-        return eventLen;
-    }
-
-    /**
-     * The time when the query started, in seconds since 1970.
-     */
-    public final long getWhen() {
-        return when;
-    }
-
-    /**
-     * Server ID of the server that created the event.
-     */
-    public final long getServerId() {
-        return serverId;
-    }
-
-    /**
-     * Some 16 flags. See the definitions above for LOG_EVENT_TIME_F,
-     * LOG_EVENT_FORCED_ROTATE_F, LOG_EVENT_THREAD_SPECIFIC_F, and
-     * LOG_EVENT_SUPPRESS_USE_F for notes.
-     */
-    public final int getFlags() {
-        return flags;
-    }
-
-    public long getCrc() {
-        return crc;
-    }
-
-    public int getChecksumAlg() {
-        return checksumAlg;
-    }
-
+    public final int getType() { return type; }
+    public final long getLogPos() { return logPos; }
+    public final int getEventLen() { return eventLen; }
+    public final long getWhen() { return when; }
+    public final long getServerId() { return serverId; }
+    public final int getFlags() { return flags; }
+    public long getCrc() { return crc; }
+    public int getChecksumAlg() { return checksumAlg; }
     private void processCheckSum(LogBuffer buffer) {
-        if (checksumAlg != LogEvent.BINLOG_CHECKSUM_ALG_OFF && checksumAlg != LogEvent.BINLOG_CHECKSUM_ALG_UNDEF) {
+        if (checksumAlg != LogEvent.BINLOG_CHECKSUM_ALG_OFF &&
+                checksumAlg != LogEvent.BINLOG_CHECKSUM_ALG_UNDEF) {
             crc = buffer.getUint32(eventLen - LogEvent.BINLOG_CHECKSUM_LEN);
         }
     }

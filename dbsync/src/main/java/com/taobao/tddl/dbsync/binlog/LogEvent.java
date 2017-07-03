@@ -14,40 +14,17 @@ import com.taobao.tddl.dbsync.binlog.event.LogHeader;
  * Packed Integer has the capacity of storing up to 8-byte integers, while small
  * integers still can use 1, 3, or 4 bytes. The value of the first byte
  * determines how to read the number, according to the following table:
- * <table>
- * <caption>Format of Packed Integer</caption>
- * <tr>
- * <th>First byte</th>
- * <th>Format</th>
- * </tr>
- * <tr>
- * <td>0-250</td>
- * <td>The first byte is the number (in the range 0-250), and no more bytes are
- * used.</td>
- * </tr>
- * <tr>
- * <td>252</td>
- * <td>Two more bytes are used. The number is in the range 251-0xffff.</td>
- * </tr>
- * <tr>
- * <td>253</td>
- * <td>Three more bytes are used. The number is in the range 0xffff-0xffffff.</td>
- * </tr>
- * <tr>
- * <td>254</td>
- * <td>Eight more bytes are used. The number is in the range
- * 0xffffff-0xffffffffffffffff.</td>
- * </tr>
- * </table>
- * - Strings are stored in various formats. The format of each string is
- * documented separately.
- * 
+ *
+ * first byte       Name
+ * -----            ----
+ * 0-250            The first byte is the number (in the range 0-250), and no more bytes are used
+ * 252              Two more bytes are used. The number is in the range 251-0xffff
+ * 253              Three more bytes are used. The number is in the range 0xffff-0xffffff
+ * 254              Eight more bytes are used. The number is in the range 0xffffff-0xffffffffffffffff
+ *
  * @see mysql-5.1.60/sql/log_event.h
- * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
- * @version 1.0
  */
 public abstract class LogEvent {
-
     /*
      * 3 is MySQL 4.x; 4 is MySQL 5.0.0. Compared to version 3, version 4 has: -
      * a different Start_log_event, which includes info about the binary log
@@ -55,7 +32,14 @@ public abstract class LogEvent {
      * master's MySQL version is different from the slave's. - all events have a
      * unique ID (the triplet (server_id, timestamp at server start, other) to
      * be sure an event is not executed more than once in a multimaster setup,
-     * example: M1 / \ v v M2 M3 \ / v v S if a query is run on M1, it will
+     * example:     M1
+      *            /  \
+      *           v   v
+      *           M2  M3
+      *            \  /
+      *            v v
+      *             S
+      *             if a query is run on M1, it will
      * arrive twice on S, so we need that S remembers the last unique ID it has
      * processed, to compare and know if the event should be skipped or not.
      * Example of ID: we already have the server id (4 bytes), plus:
@@ -69,13 +53,9 @@ public abstract class LogEvent {
      * PASSWORD() version (old/new/...).
      */
     public static final int    BINLOG_VERSION                           = 4;
+    public static final String SERVER_VERSION                           = "5.0";    /* Default 5.0 server version */
 
-    /* Default 5.0 server version */
-    public static final String SERVER_VERSION                           = "5.0";
-
-    /**
-     * Event header offsets; these point to places inside the fixed header.
-     */
+    /* Event header offsets; these point to places inside the fixed header */
     public static final int    EVENT_TYPE_OFFSET                        = 4;
     public static final int    SERVER_ID_OFFSET                         = 5;
     public static final int    EVENT_LEN_OFFSET                         = 9;
@@ -114,27 +94,19 @@ public abstract class LogEvent {
     public static final int    XID_EVENT                                = 16;
     public static final int    BEGIN_LOAD_QUERY_EVENT                   = 17;
     public static final int    EXECUTE_LOAD_QUERY_EVENT                 = 18;
-
     public static final int    TABLE_MAP_EVENT                          = 19;
 
-    /**
-     * These event numbers were used for 5.1.0 to 5.1.15 and are therefore
-     * obsolete.
-     */
+    /* These event numbers were used for 5.1.0 to 5.1.15 and are therefore obsolete */
     public static final int    PRE_GA_WRITE_ROWS_EVENT                  = 20;
     public static final int    PRE_GA_UPDATE_ROWS_EVENT                 = 21;
     public static final int    PRE_GA_DELETE_ROWS_EVENT                 = 22;
 
-    /**
-     * These event numbers are used from 5.1.16 and forward
-     */
+    /* These event numbers are used from 5.1.16 and forward */
     public static final int    WRITE_ROWS_EVENT_V1                      = 23;
     public static final int    UPDATE_ROWS_EVENT_V1                     = 24;
     public static final int    DELETE_ROWS_EVENT_V1                     = 25;
 
-    /**
-     * Something out of the ordinary happened on the master
-     */
+    /* Something out of the ordinary happened on the master */
     public static final int    INCIDENT_EVENT                           = 26;
 
     /**

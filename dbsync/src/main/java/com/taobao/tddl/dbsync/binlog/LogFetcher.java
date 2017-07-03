@@ -30,38 +30,20 @@ import java.util.Arrays;
  * @version 1.0
  */
 public abstract class LogFetcher extends LogBuffer implements Closeable {
-
-    /** Default initial capacity. */
-    public static final int   DEFAULT_INITIAL_CAPACITY = 8192;
-
-    /** Default growth factor. */
-    public static final float DEFAULT_GROWTH_FACTOR    = 2.0f;
-
-    /** Binlog file header size */
-    public static final int   BIN_LOG_HEADER_SIZE      = 4;
+    public static final int   DEFAULT_INITIAL_CAPACITY = 8192;  /* 数据buffer内部的数组大小 */
+    public static final float DEFAULT_GROWTH_FACTOR    = 2.0f;  /** Default growth factor. */
+    public static final int   BIN_LOG_HEADER_SIZE      = 4;     /** Binlog file header size */
 
     protected final float     factor;
 
-    public LogFetcher(){
-        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR);
-    }
-
-    public LogFetcher(final int initialCapacity){
-        this(initialCapacity, DEFAULT_GROWTH_FACTOR);
-    }
-
+    public LogFetcher(){ this(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR); }
+    public LogFetcher(final int initialCapacity){ this(initialCapacity, DEFAULT_GROWTH_FACTOR); }
     public LogFetcher(final int initialCapacity, final float growthFactor){
         this.buffer = new byte[initialCapacity];
         this.factor = growthFactor;
     }
 
-    /**
-     * Increases the capacity of this <tt>LogFetcher</tt> instance, if
-     * necessary, to ensure that it can hold at least the number of elements
-     * specified by the minimum capacity argument.
-     * 
-     * @param minCapacity the desired minimum capacity
-     */
+    /* 增加内部数组的大小，如果当前大小乘上factor之后的大小小于min，这用min，然后使用计算出来的大小 */
     protected final void ensureCapacity(final int minCapacity) {
         final int oldCapacity = buffer.length;
 
@@ -73,15 +55,8 @@ public abstract class LogFetcher extends LogBuffer implements Closeable {
         }
     }
 
-    /**
-     * Fetches the next frame of binary-log, and fill it in buffer.
-     */
+    /* Fetches the next frame of binary-log, and fill it in buffer. */
     public abstract boolean fetch() throws IOException;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.io.Closeable#close()
-     */
     public abstract void close() throws IOException;
 }
