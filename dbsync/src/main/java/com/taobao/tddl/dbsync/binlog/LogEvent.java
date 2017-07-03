@@ -57,7 +57,9 @@ public abstract class LogEvent {
     public static final int    BINLOG_VERSION                           = 4;
     public static final String SERVER_VERSION                           = "5.0";    /* Default 5.0 server version */
 
-    /* Event header offsets; these point to places inside the fixed header */
+
+
+            /* Event header offsets; these point to places inside the fixed header */
     public static final int    TIME_STAMP_OFFSET                        = 0;
     public static final int    EVENT_TYPE_OFFSET                        = 4;
     public static final int    SERVER_ID_OFFSET                         = 5;
@@ -65,26 +67,31 @@ public abstract class LogEvent {
     public static final int    LOG_POS_OFFSET                           = 13;
     public static final int    FLAGS_OFFSET                             = 17;
 
-    /* event-specific post-header sizes */
+
+
+
+                /************ event-specific post-header sizes **************/
     // where 3.23, 4.x and 5.0 agree
     public static final int    QUERY_HEADER_MINIMAL_LEN                 = (4 + 4 + 1 + 2);
     // where 5.0 differs: 2 for len of N-bytes vars.
     public static final int    QUERY_HEADER_LEN                         = (QUERY_HEADER_MINIMAL_LEN + 2);
 
-    /* Enumeration type for the different types of log events. */
+
+
+
+            /********* Enumeration type for the different types of log events. ************/
     public static final int    UNKNOWN_EVENT                            = 0;
     public static final int    START_EVENT_V3                           = 1;
     public static final int    QUERY_EVENT                              = 2;
     public static final int    STOP_EVENT                               = 3;
     public static final int    ROTATE_EVENT                             = 4;
     public static final int    INTVAR_EVENT                             = 5;
-    public static final int    LOAD_EVENT                               = 6;
+    public static final int    LOAD_EVENT                               = 6;    // 加载文件
     public static final int    SLAVE_EVENT                              = 7;
-    public static final int    CREATE_FILE_EVENT                        = 8;
-    public static final int    APPEND_BLOCK_EVENT                       = 9;
-    public static final int    EXEC_LOAD_EVENT                          = 10;
-    public static final int    DELETE_FILE_EVENT                        = 11;
-
+    public static final int    CREATE_FILE_EVENT                        = 8;    // 创建文件
+    public static final int    APPEND_BLOCK_EVENT                       = 9;    // 向文件中写入数据
+    public static final int    EXEC_LOAD_EVENT                          = 10;   // 加载文件
+    public static final int    DELETE_FILE_EVENT                        = 11;   // 删除文件
     /**
      * NEW_LOAD_EVENT is like LOAD_EVENT except that it has a longer sql_ex,
      * allowing multibyte TERMINATED BY etc; both types share the same class
@@ -95,29 +102,24 @@ public abstract class LogEvent {
     public static final int    USER_VAR_EVENT                           = 14;
     public static final int    FORMAT_DESCRIPTION_EVENT                 = 15;
     public static final int    XID_EVENT                                = 16;
-    public static final int    BEGIN_LOAD_QUERY_EVENT                   = 17;
-    public static final int    EXECUTE_LOAD_QUERY_EVENT                 = 18;
+    public static final int    BEGIN_LOAD_QUERY_EVENT                   = 17;   // 类似于CREATE_FILE_EVENT 但是load date infile的options在execute中
+    public static final int    EXECUTE_LOAD_QUERY_EVENT                 = 18;   // 类似EXEC_LOAD_EVENT,但是有options
     public static final int    TABLE_MAP_EVENT                          = 19;
-
     /* These event numbers were used for 5.1.0 to 5.1.15 and are therefore obsolete */
     public static final int    PRE_GA_WRITE_ROWS_EVENT                  = 20;
     public static final int    PRE_GA_UPDATE_ROWS_EVENT                 = 21;
     public static final int    PRE_GA_DELETE_ROWS_EVENT                 = 22;
-
     /* These event numbers are used from 5.1.16 and forward */
     public static final int    WRITE_ROWS_EVENT_V1                      = 23;
     public static final int    UPDATE_ROWS_EVENT_V1                     = 24;
     public static final int    DELETE_ROWS_EVENT_V1                     = 25;
-
     /* Something out of the ordinary happened on the master */
     public static final int    INCIDENT_EVENT                           = 26;
-
     /**
      * Heartbeat event to be send by master at its idle time to ensure master's
      * online status to slave
      */
     public static final int    HEARTBEAT_LOG_EVENT                      = 27;
-
     /**
      * In some situations, it is necessary to send over ignorable data to the
      * slave: data that a slave can handle in case there is code for handling
@@ -125,21 +127,16 @@ public abstract class LogEvent {
      */
     public static final int    IGNORABLE_LOG_EVENT                      = 28;
     public static final int    ROWS_QUERY_LOG_EVENT                     = 29;
-
     /** Version 2 of the Row events */
     public static final int    WRITE_ROWS_EVENT                         = 30;
     public static final int    UPDATE_ROWS_EVENT                        = 31;
     public static final int    DELETE_ROWS_EVENT                        = 32;
-
     public static final int    GTID_LOG_EVENT                           = 33;
     public static final int    ANONYMOUS_GTID_LOG_EVENT                 = 34;
-
     public static final int    PREVIOUS_GTIDS_LOG_EVENT                 = 35;
-
     // mariaDb 5.5.34
     /* New MySQL/Sun events are to be added right above this comment */
     public static final int    MYSQL_EVENTS_END                         = 36;
-
     public static final int    MARIA_EVENTS_BEGIN                       = 160;
     /* New Maria event numbers start from here */
     public static final int    ANNOTATE_ROWS_EVENT                      = 160;
@@ -167,7 +164,8 @@ public abstract class LogEvent {
     /** end marker */
     public static final int    ENUM_END_EVENT                           = 164;
 
-    /**
+
+    /** TODO
      * 1 byte length, 1 byte format Length is total length in bytes, including 2
      * byte header Length values 0 and 1 are currently invalid and reserved.
      */
@@ -221,7 +219,9 @@ public abstract class LogEvent {
      */
     public static final int    LOG_EVENT_IGNORABLE_F                    = 0x80;
 
-    /** enum_field_types */
+
+
+                /**************** enum_field_types ******************/
     public static final int    MYSQL_TYPE_DECIMAL                       = 0;
     public static final int    MYSQL_TYPE_TINY                          = 1;
     public static final int    MYSQL_TYPE_SHORT                         = 2;
@@ -253,7 +253,6 @@ public abstract class LogEvent {
     public static final int    MYSQL_TYPE_VAR_STRING                    = 253;
     public static final int    MYSQL_TYPE_STRING                        = 254;
     public static final int    MYSQL_TYPE_GEOMETRY                      = 255;
-
     public static String getTypeName(final int type) {
         switch (type) {
             case START_EVENT_V3:

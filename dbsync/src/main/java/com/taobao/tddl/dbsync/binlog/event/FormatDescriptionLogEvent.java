@@ -117,11 +117,13 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
         }
     }
 
+
+
+    /* 获得指定版本的FormatDescription对象 */
     public FormatDescriptionLogEvent(final int binlogVersion, int binlogChecksum){
         this(binlogVersion);
         this.header.checksumAlg = binlogChecksum;
     }
-
     public static FormatDescriptionLogEvent getFormatDescription(final int binlogVersion) throws IOException {
         /* identify binlog format */
         switch (binlogVersion) {
@@ -135,7 +137,6 @@ public final class FormatDescriptionLogEvent extends StartLogEventV3 {
                 throw new IOException("Unknown binlog version: " + binlogVersion);
         }
     }
-
     /** MySQL 5.0 format descriptions. */
     public static final FormatDescriptionLogEvent FORMAT_DESCRIPTION_EVENT_5_x   = new FormatDescriptionLogEvent(4);
     /** MySQL 4.0.x (x>=2) format descriptions. */

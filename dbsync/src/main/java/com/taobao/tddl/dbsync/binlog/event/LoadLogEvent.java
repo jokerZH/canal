@@ -4,9 +4,8 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
 import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
- * This log event corresponds to a "LOAD DATA INFILE" SQL query on the following
- * form:
- * 
+ * This log event corresponds to a "LOAD DATA INFILE" SQL query on the following form:
+ *
  * <pre>
  *    (1)    USE db;
  *    (2)    LOAD DATA [CONCURRENT] [LOCAL] INFILE 'file_name'
@@ -24,88 +23,75 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  *   (14)    [IGNORE skip_lines LINES]
  *   (15)    (field_1, field_2, ..., field_n)
  * </pre>
- * 
+ *
+ *
  * Binary Format: The Post-Header consists of the following six components.
- * <table>
- * <caption>Post-Header for Load_log_event</caption>
- * <tr>
- * <th>Name</th>
- * <th>Format</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td>slave_proxy_id</td>
- * <td>4 byte unsigned integer</td>
- * <td>An integer identifying the client thread that issued the query. The id is
- * unique per server. (Note, however, that two threads on different servers may
- * have the same slave_proxy_id.) This is used when a client thread creates a
- * temporary table local to the client. The slave_proxy_id is used to
- * distinguish temporary tables that belong to different clients.</td>
- * </tr>
- * <tr>
- * <td>exec_time</td>
- * <td>4 byte unsigned integer</td>
- * <td>The time from when the query started to when it was logged in the binlog,
- * in seconds.</td>
- * </tr>
- * <tr>
- * <td>skip_lines</td>
- * <td>4 byte unsigned integer</td>
- * <td>The number on line (14) above, if present, or 0 if line (14) is left out.
- * </td>
- * </tr>
- * <tr>
- * <td>table_name_len</td>
- * <td>1 byte unsigned integer</td>
- * <td>The length of 'table_name' on line (4) above.</td>
- * </tr>
- * <tr>
- * <td>db_len</td>
- * <td>1 byte unsigned integer</td>
- * <td>The length of 'db' on line (1) above.</td>
- * </tr>
- * <tr>
- * <td>num_fields</td>
- * <td>4 byte unsigned integer</td>
- * <td>The number n of fields on line (15) above.</td>
- * </tr>
- * </table>
- * The Body contains the following components.
- * <table>
- * <caption>Body of Load_log_event</caption>
- * <tr>
- * <th>Name</th>
- * <th>Format</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td>sql_ex</td>
- * <td>variable length</td>
- * <td>Describes the part of the query on lines (3) and (5)&ndash;(13) above.
- * More precisely, it stores the five strings (on lines) field_term (6),
- * enclosed (7), escaped (8), line_term (11), and line_start (12); as well as a
- * bitfield indicating the presence of the keywords REPLACE (3), IGNORE (3), and
- * OPTIONALLY (7). The data is stored in one of two formats, called "old" and
- * "new". The type field of Common-Header determines which of these two formats
- * is used: type LOAD_EVENT means that the old format is used, and type
- * NEW_LOAD_EVENT means that the new format is used. When MySQL writes a
- * Load_log_event, it uses the new format if at least one of the five strings is
- * two or more bytes long. Otherwise (i.e., if all strings are 0 or 1 bytes
- * long), the old format is used. The new and old format differ in the way the
- * five strings are stored.
- * <ul>
- * <li>In the new format, the strings are stored in the order field_term,
- * enclosed, escaped, line_term, line_start. Each string consists of a length (1
- * byte), followed by a sequence of characters (0-255 bytes). Finally, a boolean
- * combination of the following flags is stored in 1 byte: REPLACE_FLAG==0x4,
- * IGNORE_FLAG==0x8, and OPT_ENCLOSED_FLAG==0x2. If a flag is set, it indicates
- * the presence of the corresponding keyword in the SQL query.
- * <li>In the old format, we know that each string has length 0 or 1. Therefore,
- * only the first byte of each string is stored. The order of the strings is the
- * same as in the new format. These five bytes are followed by the same 1 byte
- * bitfield as in the new format. Finally, a 1 byte bitfield called empty_flags
- * is stored. The low 5 bits of empty_flags indicate which of the five strings
- * have length 0. For each of the following flags that is set, the corresponding
+ *
+ * Bytes            desc
+ * -----            ----
+ * 4(unsigned)      slave_proxy_id, 4 byte unsigned integer
+                    An integer identifying the client thread that issued the query. The id is
+                    unique per server. (Note, however, that two threads on different servers may
+                    have the same slave_proxy_id.) This is used when a client thread creates a
+                    temporary table local to the client. The slave_proxy_id is used to
+                    distinguish temporary tables that belong to different clients.</td>
+
+ * 4(unsigned)      exec_time,The time from when the query started to when it was logged in
+                    the binlog in seconds.</td>
+
+ * 4(unsigned       skip_lines,The number on line (14) above, if present, or 0 if line (14) is left out.
+ * 1(unsigned)      table_name_len, The length of 'table_name' on line (4) above.
+ * 1(unsigned)      db_len, The length of 'db' on line (1) above.
+ * 4(unsigned)      num_fields, The number n of fields on line (15) above.
+ *
+ *
+ *
+ *                  variable data part
+ * Bytes        desc
+ * -----        ----
+ * n            it stores the five strings (on lines) field_term (6), enclosed (7), escaped (8), line_term (11),
+                and line_start (12); as well as a bitfield indicating the presence of the keywords
+                REPLACE (3), IGNORE (3), and OPTIONALLY (7).
+                The data is stored in one of two formats, called "old" and "new".
+                The type field of Common-Header determines which of these two formatsis used:
+                type LOAD_EVENT means that the old format is used,
+                and type NEW_LOAD_EVENT means that the new format is used.
+                When MySQL writes a Load_log_event, it uses the new format if at least one of the five strings is
+                two or more bytes long. Otherwise (i.e., if all strings are 0 or 1 bytes long),
+                the old format is used. The new and old format differ in the way the five strings are stored.
+
+                    new format
+                Bytes       desc
+                -----       -----
+                1           field_term len
+                0-255       field_term content
+                1           enclosed len
+                0-255       enclosed content
+                1           escaped len
+                0-255       escaped content
+                1           line_term len
+                0-255       line_term content
+                1           line_start len
+                0-255       line_start content
+                1           a boolean  combination of the following flags is stored in 1 byte:
+                            REPLACE_FLAG==0x4, IGNORE_FLAG==0x8, and OPT_ENCLOSED_FLAG==0x2.
+                            If a flag is set, it indicates the presence of the corresponding keyword in the SQL query.
+
+
+                    old format
+                Bytes       desc
+                -----       -----
+                1           field_term content
+                1           enclosed content
+                1           escaped content
+                1           line_term content
+                1           line_start content
+                1           a boolean  combination of the following flags is stored in 1 byte:
+                            REPLACE_FLAG==0x4, IGNORE_FLAG==0x8, and OPT_ENCLOSED_FLAG==0x2.
+                            If a flag is set, it indicates the presence of the corresponding keyword in the SQL query.
+                1           empty_flags, The low 5 bits of empty_flags indicate which of the five strings have length 0
+
+ For each of the following flags that is set, the corresponding
  * string has length 0; for the flags that are not set, the string has length 1:
  * FIELD_TERM_EMPTY==0x1, ENCLOSED_EMPTY==0x2, LINE_TERM_EMPTY==0x4,
  * LINE_START_EMPTY==0x8, ESCAPED_EMPTY==0x10.
@@ -284,55 +270,17 @@ public class LoadLogEvent extends LogEvent {
         buffer.forward(1); // The + 1 is for \0 terminating fname
     }
 
-    public final String getTable() {
-        return table;
-    }
-
-    public final String getDb() {
-        return db;
-    }
-
-    public final String getFname() {
-        return fname;
-    }
-
-    public final int getSkipLines() {
-        return skipLines;
-    }
-
-    public final String[] getFields() {
-        return fields;
-    }
-
-    public final String getFieldTerm() {
-        return fieldTerm;
-    }
-
-    public final String getLineTerm() {
-        return lineTerm;
-    }
-
-    public final String getLineStart() {
-        return lineStart;
-    }
-
-    public final String getEnclosed() {
-        return enclosed;
-    }
-
-    public final String getEscaped() {
-        return escaped;
-    }
-
-    public final int getOptFlags() {
-        return optFlags;
-    }
-
-    public final int getEmptyFlags() {
-        return emptyFlags;
-    }
-
-    public final long getExecTime() {
-        return execTime;
-    }
+    public final String getTable() { return table; }
+    public final String getDb() { return db; }
+    public final String getFname() { return fname; }
+    public final int getSkipLines() { return skipLines; }
+    public final String[] getFields() { return fields; }
+    public final String getFieldTerm() { return fieldTerm; }
+    public final String getLineTerm() { return lineTerm; }
+    public final String getLineStart() { return lineStart; }
+    public final String getEnclosed() { return enclosed; }
+    public final String getEscaped() { return escaped; }
+    public final int getOptFlags() { return optFlags; }
+    public final int getEmptyFlags() { return emptyFlags; }
+    public final long getExecTime() { return execTime; }
 }
