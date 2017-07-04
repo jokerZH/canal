@@ -5,12 +5,16 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
  * Append_block_log_event.
- * 
+ *
+ * Bytes        desc
+ * -----        ----
+ * 4            fileId
+ * string       fileData
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public class AppendBlockLogEvent extends LogEvent {
-
     private final LogBuffer blockBuf;
     private final int       blockLen;
 
@@ -34,15 +38,7 @@ public class AppendBlockLogEvent extends LogEvent {
         blockBuf = buffer.duplicate(blockLen);
     }
 
-    public final long getFileId() {
-        return fileId;
-    }
-
-    public final LogBuffer getBuffer() {
-        return blockBuf;
-    }
-
-    public final byte[] getData() {
-        return blockBuf.getData();
-    }
+    public final long getFileId() { return fileId; }
+    public final LogBuffer getBuffer() { return blockBuf; }
+    public final byte[] getData() { return blockBuf.getData(); }
 }

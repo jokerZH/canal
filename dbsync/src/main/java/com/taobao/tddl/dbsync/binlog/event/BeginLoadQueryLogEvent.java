@@ -6,7 +6,9 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
  * Event for the first block of file to be loaded, its only difference from
  * Append_block event is that this event creates or truncates existing file
  * before writing data.
- * 
+ *
+ * 格式通AppendBlockLogEvent
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */

@@ -4,37 +4,27 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
 import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
+ * When a binary log file exceeds a size limit, a ROTATE_EVENT is written
+ * at the end of the file that points to the next file in the squence.
+ * This event is information for the slave to know the name of
+ * the next binary log it is going to receive.
+ *
  * This will be deprecated when we move to using sequence ids. Binary Format The
- * Post-Header has one component:
- * <table>
- * <caption>Post-Header for Rotate_log_event</caption>
- * <tr>
- * <th>Name</th>
- * <th>Format</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td>position</td>
- * <td>8 byte integer</td>
- * <td>The position within the binlog to rotate to.</td>
- * </tr>
- * </table>
- * The Body has one component:
- * <table>
- * <caption>Body for Rotate_log_event</caption>
- * <tr>
- * <th>Name</th>
- * <th>Format</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td>new_log</td>
- * <td>variable length string without trailing zero, extending to the end of the
- * event (determined by the length field of the Common-Header)</td>
- * <td>Name of the binlog to rotate to.</td>
- * </tr>
- * </table>
- * 
+ *
+ *          Post-Header for Rotate_log_event
+ *  bytes           Name
+ *  -----           ----
+ *  8               position
+ *                  The position within the binlog to rotate to
+ *
+ *
+ *          Body for Rotate_log_event
+ *  bytes           Name
+ *  -----           ----
+ * string           new_log Name of the binlog to rotate to
+ *                  variable length string without trailing zero, extending to the end of the
+ *                  event (determined by the length field of the Common-Header)
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
@@ -69,23 +59,18 @@ public final class RotateLogEvent extends LogEvent {
     // Rotate header with all empty fields.
     public static final LogHeader ROTATE_HEADER  = new LogHeader(ROTATE_EVENT);
 
-    /**
-     * Creates a new <code>Rotate_log_event</code> object read normally from
-     * log.
-     * 
-     * @throws MySQLExtractException
-     */
+    /* Creates a new <code>Rotate_log_event</code> object read normally from log */
     public RotateLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent){
         super(header);
 
         final int headerSize = descriptionEvent.commonHeaderLen;
         final int postHeaderLen = descriptionEvent.postHeaderLen[ROTATE_EVENT - 1];
 
+        // 获得偏移
         buffer.position(headerSize + R_POS_OFFSET);
-        position = (postHeaderLen != 0) ? buffer.getLong64() : 4; // !uint8korr(buf
-                                                                  // +
-                                                                  // R_POS_OFFSET)
+        position = (postHeaderLen != 0) ? buffer.getLong64() : 4; // !uint8korr(buf + R_POS_OFFSET)
 
+        // 获得文件名
         final int filenameOffset = headerSize + postHeaderLen;
         int filenameLen = buffer.limit() - filenameOffset;
         if (filenameLen > FN_REFLEN - 1) filenameLen = FN_REFLEN - 1;
@@ -94,10 +79,7 @@ public final class RotateLogEvent extends LogEvent {
         filename = buffer.getFixString(filenameLen);
     }
 
-    /**
-     * Creates a new <code>Rotate_log_event</code> without log information. This
-     * is used to generate missing log rotation events.
-     */
+    /* Creates a new <code>Rotate_log_event</code> without log information. This is used to generate missing log rotation events. */
     public RotateLogEvent(String filename){
         super(ROTATE_HEADER);
 
@@ -105,9 +87,7 @@ public final class RotateLogEvent extends LogEvent {
         this.position = 4;
     }
 
-    /**
-     * Creates a new <code>Rotate_log_event</code> without log information.
-     */
+    /* Creates a new <code>Rotate_log_event</code> without log information. */
     public RotateLogEvent(String filename, final long position){
         super(ROTATE_HEADER);
 
@@ -115,11 +95,6 @@ public final class RotateLogEvent extends LogEvent {
         this.position = position;
     }
 
-    public final String getFilename() {
-        return filename;
-    }
-
-    public final long getPosition() {
-        return position;
-    }
+    public final String getFilename() { return filename; }
+    public final long getPosition() { return position; }
 }

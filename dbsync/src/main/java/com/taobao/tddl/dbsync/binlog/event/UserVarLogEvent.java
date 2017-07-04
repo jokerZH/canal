@@ -11,7 +11,24 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  * User_var_log_event. Every time a query uses the value of a user variable, a
  * User_var_log_event is written before the Query_log_event, to set the user
  * variable.
- * 
+ *
+ *           Body for Rand_log_event
+ * Bytes            desc
+ * -----            ----
+ * 4                the size of the user variable name
+ * string           The user variable name
+ * 1                Non-zero if the variable value is the SQL NULL value,
+ *                  0 otherwise. If this byte is 0, the following parts exist in the event
+ * 1                The user variable type. The value corresponds to elements of
+                    enum Item_result defined in include/mysql_com.
+ * 4                The number of the character set for the user variable
+                    (needed for a string variable). The character set number is really a
+                    collation number that indicates a character set/collation pair.</li>
+ * 4                The size of the user variable value (corresponds to member val_len of class Item_string)
+ * Variable-sized   For a string variable, this is the string.
+                    For a float or integer variable, this is its value in 8 bytes
+ *
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
@@ -62,8 +79,7 @@ public final class UserVarLogEvent extends LogEvent {
     public static final int    UV_NAME_LEN_SIZE       = 4;
     public static final int    UV_CHARSET_NUMBER_SIZE = 4;
 
-    public UserVarLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent)
-                                                                                                          throws IOException{
+    public UserVarLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent) throws IOException{
         super(header);
 
         /* The Post-Header is empty. The Variable Data part begins immediately. */

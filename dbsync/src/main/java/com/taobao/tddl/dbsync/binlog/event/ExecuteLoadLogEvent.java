@@ -5,12 +5,15 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
  * Execute_load_log_event.
- * 
+ *
+ * Bytes        desc
+ * -----        ----
+ * 4            fileId
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public final class ExecuteLoadLogEvent extends LogEvent {
-
     private final long      fileId;
 
     /* EL = "Execute Load" */
@@ -24,7 +27,5 @@ public final class ExecuteLoadLogEvent extends LogEvent {
         fileId = buffer.getUint32(); // EL_FILE_ID_OFFSET
     }
 
-    public final long getFileId() {
-        return fileId;
-    }
+    public final long getFileId() { return fileId; }
 }

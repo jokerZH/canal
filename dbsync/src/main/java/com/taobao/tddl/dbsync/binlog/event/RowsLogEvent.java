@@ -8,56 +8,51 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
  * Common base class for all row-containing log events.
- * 
+ *
+ *          Fixed data part:
+ * Bytes            desc
+ * -----            ----
+ * 6                The table ID
+ * 2                Reserved for future use
+ *
+ *          Variable data part:
+ * Bytes            desc
+ * -----            ----
+ * Packed integer   The number of columns in the table
+ * Variable-sized   Bit-field indicating whether each column is used, one
+                    bit per column. For this field, the amount of storage required for N
+                    columns is INT((N+7)/8) bytes
+ * Variable-sized   (for UPDATE_ROWS_LOG_EVENT only). Bit-field indicating
+                    whether each column is used in the UPDATE_ROWS_LOG_EVENT after-image; one
+                    bit per column. For this field, the amount of storage required for N
+                    columns is INT((N+7)/8) bytes.</li>
+ * Variable-sized   A sequence of zero or more rows. The end is
+                    determined by the size of the event. Each row has the following format:
+                    -----               -----
+                    Variable-sized      Bit-field indicating whether each field in the row is
+                                        NULL. Only columns that are "used" according to the second field in the
+                                        variable data part are listed here. If the second field in the variable
+                                        data part has N one-bits, the amount of storage required for this field
+                                        is INT((N+7)/8) bytes
+                    Variable-sized      The row-image, containing values of all table fields.
+                                        This only lists table fields that are used (according to the second field
+                                        of the variable data part) and non-NULL (according to the previous
+                                        field). In other words, the number of values listed here is equal to the
+                                        number of zero bits in the previous field (not counting padding bits in
+                                        the last byte). The format of each value is described in the
+                                        log_event_print_value() function in log_event.cc.
+
+
+ * (for UPDATE_ROWS_EVENT only) the previous two fields are repeated,
+ * representing a second table row.</li>
+ *
+ * Source : http://forge.mysql.com/wiki/MySQL_Internals_Binary_Log
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public abstract class RowsLogEvent extends LogEvent {
-
-    /**
-     * Fixed data part:
-     * <ul>
-     * <li>6 bytes. The table ID.</li>
-     * <li>2 bytes. Reserved for future use.</li>
-     * </ul>
-     * <p>
-     * Variable data part:
-     * <ul>
-     * <li>Packed integer. The number of columns in the table.</li>
-     * <li>Variable-sized. Bit-field indicating whether each column is used, one
-     * bit per column. For this field, the amount of storage required for N
-     * columns is INT((N+7)/8) bytes.</li>
-     * <li>Variable-sized (for UPDATE_ROWS_LOG_EVENT only). Bit-field indicating
-     * whether each column is used in the UPDATE_ROWS_LOG_EVENT after-image; one
-     * bit per column. For this field, the amount of storage required for N
-     * columns is INT((N+7)/8) bytes.</li>
-     * <li>Variable-sized. A sequence of zero or more rows. The end is
-     * determined by the size of the event. Each row has the following format:
-     * <ul>
-     * <li>Variable-sized. Bit-field indicating whether each field in the row is
-     * NULL. Only columns that are "used" according to the second field in the
-     * variable data part are listed here. If the second field in the variable
-     * data part has N one-bits, the amount of storage required for this field
-     * is INT((N+7)/8) bytes.</li>
-     * <li>Variable-sized. The row-image, containing values of all table fields.
-     * This only lists table fields that are used (according to the second field
-     * of the variable data part) and non-NULL (according to the previous
-     * field). In other words, the number of values listed here is equal to the
-     * number of zero bits in the previous field (not counting padding bits in
-     * the last byte). The format of each value is described in the
-     * log_event_print_value() function in log_event.cc.</li>
-     * <li>(for UPDATE_ROWS_EVENT only) the previous two fields are repeated,
-     * representing a second table row.</li>
-     * </ul>
-     * </ul>
-     * Source : http://forge.mysql.com/wiki/MySQL_Internals_Binary_Log
-     */
-    private final long       tableId;                           /* Table ID */
-    private TableMapLogEvent table;                             /*
-                                                                  * The table
-                                                                  * the rows
-                                                                  * belong to
-                                                                  */
+    private final long       tableId;   /* Table ID */
+    private TableMapLogEvent table;     /* The table the rows belong to */
 
     /** Bitmap denoting columns available */
     protected final int      columnLen;
@@ -177,27 +172,12 @@ public abstract class RowsLogEvent extends LogEvent {
         }
     }
 
-    public final long getTableId() {
-        return tableId;
-    }
-
-    public final TableMapLogEvent getTable() {
-        return table;
-    }
-
-    public final BitSet getColumns() {
-        return columns;
-    }
-
-    public final BitSet getChangeColumns() {
-        return changeColumns;
-    }
-
+    public final long getTableId() { return tableId; }
+    public final TableMapLogEvent getTable() { return table; }
+    public final BitSet getColumns() { return columns; }
+    public final BitSet getChangeColumns() { return changeColumns; }
     public final RowsLogBuffer getRowsBuf(String charsetName) {
         return new RowsLogBuffer(rowsBuf.duplicate(), columnLen, charsetName);
     }
-
-    public final int getFlags(final int flags) {
-        return this.flags & flags;
-    }
+    public final int getFlags(final int flags) { return this.flags & flags; }
 }

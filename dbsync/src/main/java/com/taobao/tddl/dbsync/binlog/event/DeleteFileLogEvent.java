@@ -5,12 +5,15 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
  * Delete_file_log_event.
- * 
+ *
+ * Bytes        desc
+ * -----        ----
+ * 4            fileId
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public final class DeleteFileLogEvent extends LogEvent {
-
     private final long      fileId;
 
     /* DF = "Delete File" */
@@ -24,7 +27,5 @@ public final class DeleteFileLogEvent extends LogEvent {
         fileId = buffer.getUint32(); // DF_FILE_ID_OFFSET
     }
 
-    public final long getFileId() {
-        return fileId;
-    }
+    public final long getFileId() { return fileId; }
 }

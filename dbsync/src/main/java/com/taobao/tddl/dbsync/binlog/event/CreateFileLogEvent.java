@@ -4,12 +4,18 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
 
 /**
  * Create_file_log_event.
- * 
+ *
+ * 在LoadLogEvent的最后加上一下字段
+ * Bytes        desc
+ * -----        ----
+ * 4            fileId
+ * string       The block of raw data to load.
+                If the file size exceeds a threshold, additional APPEND_BLOCK_EVENT instances will follow,
+                each containing a data block. The size of the raw data is the event size minus the size of all other parts.
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
 public final class CreateFileLogEvent extends LoadLogEvent {
-
     protected LogBuffer     blockBuf;
     protected int           blockLen;
     protected long          fileId;
@@ -50,15 +56,7 @@ public final class CreateFileLogEvent extends LoadLogEvent {
         }
     }
 
-    public final long getFileId() {
-        return fileId;
-    }
-
-    public final LogBuffer getBuffer() {
-        return blockBuf;
-    }
-
-    public final byte[] getData() {
-        return blockBuf.getData();
-    }
+    public final long getFileId() { return fileId; }
+    public final LogBuffer getBuffer() { return blockBuf; }
+    public final byte[] getData() { return blockBuf.getData(); }
 }

@@ -8,26 +8,17 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  * query uses one of the variables LAST_INSERT_ID or INSERT_ID. Each
  * Intvar_log_event holds the value of one of these variables. Binary Format The
  * Post-Header for this event type is empty. The Body has two components:
- * <table>
- * <caption>Body for Intvar_log_event</caption>
- * <tr>
- * <th>Name</th>
- * <th>Format</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td>type</td>
- * <td>1 byte enumeration</td>
- * <td>One byte identifying the type of variable stored. Currently, two
- * identifiers are supported: LAST_INSERT_ID_EVENT==1 and INSERT_ID_EVENT==2.</td>
- * </tr>
- * <tr>
- * <td>value</td>
- * <td>8 byte unsigned integer</td>
- * <td>The value of the variable.</td>
- * </tr>
- * </table>
- * 
+ *
+ *          Body for Intvar_log_event
+ *
+ *  bytes                   Name
+ *  -----                   ----
+ *  1 byte enumeration      type
+ *                          One byte identifying the type of variable stored. Currently, two
+ *                          identifiers are supported: LAST_INSERT_ID_EVENT==1 and INSERT_ID_EVENT==2.
+ * 8 byte unsigned integer  The value of the variable.
+ *
+ *
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */
@@ -61,21 +52,12 @@ public final class IntvarLogEvent extends LogEvent {
         super(header);
 
         /* The Post-Header is empty. The Varible Data part begins immediately. */
-        buffer.position(descriptionEvent.commonHeaderLen + descriptionEvent.postHeaderLen[INTVAR_EVENT - 1]
-                        + I_TYPE_OFFSET);
+        buffer.position(descriptionEvent.commonHeaderLen + descriptionEvent.postHeaderLen[INTVAR_EVENT - 1] + I_TYPE_OFFSET);
         type = buffer.getInt8(); // I_TYPE_OFFSET
         value = buffer.getLong64(); // !uint8korr(buf + I_VAL_OFFSET);
     }
 
-    public final int getType() {
-        return type;
-    }
-
-    public final long getValue() {
-        return value;
-    }
-
-    public final String getQuery() {
-        return "SET INSERT_ID = " + value;
-    }
+    public final int getType() { return type; }
+    public final long getValue() { return value; }
+    public final String getQuery() { return "SET INSERT_ID = " + value; }
 }
