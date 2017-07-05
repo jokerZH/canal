@@ -4,16 +4,18 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
 import com.taobao.tddl.dbsync.binlog.LogEvent;
 
 /**
+ *
+ * Bytes            desc
+ * -----            ----
+ * TODO
+ *
  * @author jianghang 2013-4-8 上午12:36:29
  * @version 1.0.3
  * @since mysql 5.6 / mariadb10
  */
 public class GtidLogEvent extends LogEvent {
-
-    // / Length of the commit_flag in event encoding
-    public static final int ENCODED_FLAG_LENGTH = 1;
-    // / Length of SID in event encoding
-    public static final int ENCODED_SID_LENGTH  = 16;
+    public static final int ENCODED_FLAG_LENGTH = 1;    // Length of the commit_flag in event encoding
+    public static final int ENCODED_SID_LENGTH  = 16;   // Length of SID in event encoding
 
     private boolean         commitFlag;
 
@@ -38,8 +40,5 @@ public class GtidLogEvent extends LogEvent {
         // ptr_buffer+= ENCODED_GNO_LENGTH;
     }
 
-    public boolean isCommitFlag() {
-        return commitFlag;
-    }
-
+    public boolean isCommitFlag() { return commitFlag; }
 }

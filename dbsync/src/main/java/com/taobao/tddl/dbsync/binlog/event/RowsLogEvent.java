@@ -9,7 +9,7 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
 /**
  * Common base class for all row-containing log events.
  *
- *          Fixed data part:
+ *          post header part:
  * Bytes            desc
  * -----            ----
  * 6                The table ID
@@ -55,8 +55,8 @@ public abstract class RowsLogEvent extends LogEvent {
     private TableMapLogEvent table;     /* The table the rows belong to */
 
     /** Bitmap denoting columns available */
-    protected final int      columnLen;
-    protected final BitSet   columns;
+    protected final int      columnLen; /* 总共多少字段 */
+    protected final BitSet   columns;   /* 涉及到的columns */
 
     /**
      * Bitmap for columns available in the after image, if present. These fields
@@ -67,11 +67,7 @@ public abstract class RowsLogEvent extends LogEvent {
     protected final BitSet   changeColumns;
 
     /** XXX: Don't handle buffer in another thread. */
-    private final LogBuffer  rowsBuf;                           /*
-                                                                  * The rows in
-                                                                  * packed
-                                                                  * format
-                                                                  */
+    private final LogBuffer  rowsBuf;   /* The rows in packed format  TODO 这里没有对column数据对解析 */
 
     /**
      * enum enum_flag These definitions allow you to combine the flags into an
@@ -79,7 +75,7 @@ public abstract class RowsLogEvent extends LogEvent {
      * conversion from an enum-constant to an integer is accepted by the
      * compiler, which is then used to set the real set of flags.
      */
-    private final int        flags;
+    private final int        flags; // reserved for future use
 
     /** Last event of a statement */
     public static final int  STMT_END_F              = 1;
@@ -90,10 +86,7 @@ public abstract class RowsLogEvent extends LogEvent {
     /** Value of the OPTION_RELAXED_UNIQUE_CHECKS flag in thd->options */
     public static final int  RELAXED_UNIQUE_CHECKS_F = (1 << 2);
 
-    /**
-     * Indicates that rows in this event are complete, that is contain values
-     * for all columns of the table.
-     */
+    /* Indicates that rows in this event are complete, that is contain values for all columns of the table.*/
     public static final int  COMPLETE_ROWS_F         = (1 << 3);
 
     /* RW = "RoWs" */
@@ -111,16 +104,14 @@ public abstract class RowsLogEvent extends LogEvent {
         int headerLen = 0;
         buffer.position(commonHeaderLen + RW_MAPID_OFFSET);
         if (postHeaderLen == 6) {
-            /*
-             * Master is of an intermediate source tree before 5.1.4. Id is 4
-             * bytes
-             */
+            /* Master is of an intermediate source tree before 5.1.4. Id is 4 bytes */
             tableId = buffer.getUint32();
         } else {
             tableId = buffer.getUlong48(); // RW_FLAGS_OFFSET
         }
         flags = buffer.getUint16();
 
+        // TODO 保存额外的row信息,感觉用于check
         if (postHeaderLen == FormatDescriptionLogEvent.ROWS_HEADER_LEN_V2) {
             headerLen = buffer.getUint16();
             headerLen -= 2;
@@ -135,8 +126,7 @@ public abstract class RowsLogEvent extends LogEvent {
                         int val = checkLen - EXTRA_ROW_INFO_HDR_BYTES;
                         assert (buffer.getUint8() == val); // EXTRA_ROW_INFO_FORMAT_OFFSET
                         for (int j = 0; j < val; j++) {
-                            assert (buffer.getUint8() == val); // EXTRA_ROW_INFO_HDR_BYTES
-                                                               // + i
+                            assert (buffer.getUint8() == val); // EXTRA_ROW_INFO_HDR_BYTES + i
                         }
                         break;
                     default:
@@ -164,7 +154,7 @@ public abstract class RowsLogEvent extends LogEvent {
     public final void fillTable(LogContext context) {
         table = context.getTable(tableId);
 
-        // end of statement check:
+        // TODO end of statement check:
         if ((flags & RowsLogEvent.STMT_END_F) != 0) {
             // Now is safe to clear ignored map (clear_tables will also
             // delete original table map events stored in the map).

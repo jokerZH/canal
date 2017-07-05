@@ -9,7 +9,21 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  *   The event is originated by master's dump thread and sent straight to
  *   slave without being logged. Slave itself does not store it in relay log
  *   but rather uses a data for immediate checks and throws away the event.
- * 
+ *
+ *  A Heartbeat_log_event is sent by a master to a slave to let the slave know
+ *  that the master is still alive. Events of this type do not appear in the
+ *  binary or relay logs. They are generated on a master server by the thread
+ *  that dumps events and sent straight to the slave without ever being written
+ *  to the binary log. The slave examines the event contents and then discards
+ *  it without writing it to the relay log.
+ *
+ *
+ *  post-header
+ *  string      logIdent
+ *
+ *  data
+ *      empty
+ *
  *   Two members of the class log_ident and Log_event::log_pos comprise 
  *   @see the event_coordinates instance. The coordinates that a heartbeat
  *   instance carries correspond to the last event master has sent from
@@ -21,7 +35,6 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  * @since mysql 5.6
  */
 public class HeartbeatLogEvent extends LogEvent {
-
     public static final int FN_REFLEN = 512; /* Max length of full path-name */
     private int             identLen;
     private String          logIdent;
@@ -38,12 +51,6 @@ public class HeartbeatLogEvent extends LogEvent {
         logIdent = buffer.getFullString(commonHeaderLen, identLen, LogBuffer.ISO_8859_1);
     }
 
-    public int getIdentLen() {
-        return identLen;
-    }
-
-    public String getLogIdent() {
-        return logIdent;
-    }
-
+    public int getIdentLen() { return identLen; }
+    public String getLogIdent() { return logIdent; }
 }

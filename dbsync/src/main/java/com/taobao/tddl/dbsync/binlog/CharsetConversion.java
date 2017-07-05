@@ -12,27 +12,9 @@ import org.apache.commons.logging.LogFactory;
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  */
 public final class CharsetConversion {
-
     static final Log logger = LogFactory.getLog(CharsetConversion.class);
 
-    static final class Entry {
-
-        protected final int    charsetId;
-        protected final String mysqlCharset;
-        protected final String mysqlCollation;
-        protected final String javaCharset;
-
-        Entry(final int id, String mysqlCharset, // NL
-              String mysqlCollation, String javaCharset){
-            this.charsetId = id;
-            this.mysqlCharset = mysqlCharset;
-            this.mysqlCollation = mysqlCollation;
-            this.javaCharset = javaCharset;
-        }
-    }
-
-    // Character set data used in lookups. The array will be sparse.
-    static final Entry[] entries = new Entry[0xff];
+    static final Entry[] entries = new Entry[0xff];     // Character set data used in lookups. The array will be sparse.
 
     static Entry getEntry(final int id) {
         if (id >= 0 && id < entries.length) {
@@ -44,17 +26,13 @@ public final class CharsetConversion {
 
     // Loads character set information.
     static void putEntry(final int charsetId, String mysqlCharset, String mysqlCollation, String javaCharset) {
-        entries[charsetId] = new Entry(charsetId, mysqlCharset, // NL
-            mysqlCollation,
-            javaCharset);
+        entries[charsetId] = new Entry(charsetId, mysqlCharset, mysqlCollation, javaCharset);
     }
 
     // Loads character set information.
     @Deprecated
     static void putEntry(final int charsetId, String mysqlCharset, String mysqlCollation) {
-        entries[charsetId] = new Entry(charsetId, mysqlCharset, // NL
-            mysqlCollation, /* Unknown java charset */
-            null);
+        entries[charsetId] = new Entry(charsetId, mysqlCharset, mysqlCollation, /* Unknown java charset */ null);
     }
 
     // Load character set data statically.
@@ -264,9 +242,7 @@ public final class CharsetConversion {
         putEntry(254, "utf8", "utf8_general_cs", "UTF-8");
     }
 
-    /**
-     * Return defined charset name for mysql.
-     */
+    /* Return defined charset name for mysql */
     public static String getCharset(final int id) {
         Entry entry = getEntry(id);
 
@@ -278,9 +254,7 @@ public final class CharsetConversion {
         }
     }
 
-    /**
-     * Return defined collaction name for mysql.
-     */
+    /* Return defined collaction name for mysql */
     public static String getCollation(final int id) {
         Entry entry = getEntry(id);
 
@@ -292,9 +266,7 @@ public final class CharsetConversion {
         }
     }
 
-    /**
-     * Return converted charset name for java.
-     */
+    /* Return converted charset name for java */
     public static String getJavaCharset(final int id) {
         Entry entry = getEntry(id);
 
@@ -333,6 +305,20 @@ public final class CharsetConversion {
                 System.out.print("null");
             }
             System.out.println();
+        }
+    }
+
+    static final class Entry {
+        protected final int    charsetId;
+        protected final String mysqlCharset;
+        protected final String mysqlCollation;
+        protected final String javaCharset;
+
+        Entry(final int id, String mysqlCharset, String mysqlCollation, String javaCharset){
+            this.charsetId = id;
+            this.mysqlCharset = mysqlCharset;
+            this.mysqlCollation = mysqlCollation;
+            this.javaCharset = javaCharset;
         }
     }
 }

@@ -10,7 +10,6 @@ import com.taobao.tddl.dbsync.binlog.LogBuffer;
  * @version 1.0
  */
 public final class DeleteRowsLogEvent extends RowsLogEvent {
-
     public DeleteRowsLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent){
         super(header, buffer, descriptionEvent);
     }

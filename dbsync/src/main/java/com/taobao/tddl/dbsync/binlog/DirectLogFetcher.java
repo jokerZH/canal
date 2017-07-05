@@ -15,7 +15,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * <pre>
  * DirectLogFetcher fetcher = new DirectLogFetcher();
  * fetcher.open(conn, file, 0, 13);
  * 
@@ -25,13 +24,11 @@ import org.apache.commons.logging.LogFactory;
  *         event = decoder.decode(fetcher, context);
  * 
  *         // process log event.
+ *
  *     } while (event != null);
  * }
  * // connection closed.
- * </pre>
  *
- * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
- * @version 1.0
  */
 public final class DirectLogFetcher extends LogFetcher {
     protected static final Log logger = LogFactory.getLog(DirectLogFetcher.class);
@@ -40,8 +37,8 @@ public final class DirectLogFetcher extends LogFetcher {
     public static final int NET_HEADER_SIZE = 4;        /* Packet header sizes */
     public static final int SQLSTATE_LENGTH = 5;        /* mysql状态是等长的string */
 
-    public static final int PACKET_LEN_OFFSET = 0;      /* Packet offsets */
-    public static final int PACKET_SEQ_OFFSET = 3;
+    public static final int PACKET_LEN_OFFSET = 0;      /* Packet长度字段在package里的偏移 */
+    public static final int PACKET_SEQ_OFFSET = 3;      /* Packet seqId 字段在package里的偏移 */
 
     /* Maximum packet length */
     public static final int MAX_PACKET_LENGTH = (256 * 256 * 256 - 1);
