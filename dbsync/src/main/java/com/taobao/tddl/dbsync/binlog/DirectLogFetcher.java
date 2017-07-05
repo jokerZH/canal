@@ -27,7 +27,8 @@ import org.apache.commons.logging.LogFactory;
  *
  *     } while (event != null);
  * }
- * // connection closed.
+ *
+ * // connection closed
  *
  */
 public final class DirectLogFetcher extends LogFetcher {

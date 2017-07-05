@@ -62,31 +62,20 @@ import com.taobao.tddl.dbsync.binlog.event.mariadb.MariaGtidLogEvent;
  * @version 1.0
  */
 public final class LogDecoder {
+    protected static final Log logger = LogFactory.getLog(LogDecoder.class);
 
-    protected static final Log logger    = LogFactory.getLog(LogDecoder.class);
+    protected final BitSet handleSet = new BitSet(LogEvent.ENUM_END_EVENT);
 
-    protected final BitSet     handleSet = new BitSet(LogEvent.ENUM_END_EVENT);
-
-    public LogDecoder(){
-    }
-
-    public LogDecoder(final int fromIndex, final int toIndex){
-        handleSet.set(fromIndex, toIndex);
-    }
-
-    public final void handle(final int fromIndex, final int toIndex) {
-        handleSet.set(fromIndex, toIndex);
-    }
-
-    public final void handle(final int flagIndex) {
-        handleSet.set(flagIndex);
-    }
+    public LogDecoder() { }
+    public LogDecoder(final int fromIndex, final int toIndex) { handleSet.set(fromIndex, toIndex); }
+    public final void handle(final int fromIndex, final int toIndex) { handleSet.set(fromIndex, toIndex); }
+    public final void handle(final int flagIndex) { handleSet.set(flagIndex); }
 
     /**
      * Decoding an event from binary-log buffer.
-     * 
-     * @return <code>UknownLogEvent</code> if event type is unknown or skipped,
-     * <code>null</code> if buffer is not including a full event.
+     *
+     * @return  UknownLogEvent  if event type is unknown or skipped,
+     *          null            if buffer is not including a full event.
      */
     public LogEvent decode(LogBuffer buffer, LogContext context) throws IOException {
         final int limit = buffer.limit();
@@ -105,8 +94,9 @@ public final class LogDecoder {
                         /* Decoding binary-log to event */
                         event = decode(buffer, header, context);
                     } catch (IOException e) {
-                        if (logger.isWarnEnabled()) logger.warn("Decoding " + LogEvent.getTypeName(header.getType())
-                                                                + " failed from: " + context.getLogPosition(), e);
+                        if (logger.isWarnEnabled()) {
+                            logger.warn("Decoding " + LogEvent.getTypeName(header.getType()) + " failed from: " + context.getLogPosition(), e);
+                        }
                         throw e;
                     } finally {
                         buffer.limit(limit); /* Restore limit */
@@ -129,8 +119,9 @@ public final class LogDecoder {
 
     /**
      * Deserialize an event from buffer.
-     * 
-     * @return <code>UknownLogEvent</code> if event type is unknown or skipped.
+     * 解析buffer
+     *
+     * @return UknownLogEvent   if event type is unknown or skipped.
      */
     public static LogEvent decode(LogBuffer buffer, LogHeader header, LogContext context) throws IOException {
         FormatDescriptionLogEvent descriptionEvent = context.getFormatDescription();
@@ -204,10 +195,10 @@ public final class LogDecoder {
                 logPosition.position = header.getLogPos();
                 return event;
             }
-            case LogEvent.SLAVE_EVENT: /* can never happen (unused event) */
-            {
-                if (logger.isWarnEnabled()) logger.warn("Skipping unsupported SLAVE_EVENT from: "
-                                                        + context.getLogPosition());
+            case LogEvent.SLAVE_EVENT: /* can never happen (unused event) */ {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Skipping unsupported SLAVE_EVENT from: " + context.getLogPosition());
+                }
                 break;
             }
             case LogEvent.CREATE_FILE_EVENT: {
@@ -271,22 +262,25 @@ public final class LogDecoder {
                 return descriptionEvent;
             }
             case LogEvent.PRE_GA_WRITE_ROWS_EVENT: {
-                if (logger.isWarnEnabled()) logger.warn("Skipping unsupported PRE_GA_WRITE_ROWS_EVENT from: "
-                                                        + context.getLogPosition());
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Skipping unsupported PRE_GA_WRITE_ROWS_EVENT from: " + context.getLogPosition());
+                }
                 // ev = new Write_rows_log_event_old(buf, event_len,
                 // description_event);
                 break;
             }
             case LogEvent.PRE_GA_UPDATE_ROWS_EVENT: {
-                if (logger.isWarnEnabled()) logger.warn("Skipping unsupported PRE_GA_UPDATE_ROWS_EVENT from: "
-                                                        + context.getLogPosition());
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Skipping unsupported PRE_GA_UPDATE_ROWS_EVENT from: " + context.getLogPosition());
+                }
                 // ev = new Update_rows_log_event_old(buf, event_len,
                 // description_event);
                 break;
             }
             case LogEvent.PRE_GA_DELETE_ROWS_EVENT: {
-                if (logger.isWarnEnabled()) logger.warn("Skipping unsupported PRE_GA_DELETE_ROWS_EVENT from: "
-                                                        + context.getLogPosition());
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Skipping unsupported PRE_GA_DELETE_ROWS_EVENT from: " + context.getLogPosition());
+                }
                 // ev = new Delete_rows_log_event_old(buf, event_len,
                 // description_event);
                 break;
@@ -397,9 +391,9 @@ public final class LogDecoder {
                     logPosition.position = header.getLogPos();
                     return event;
                 } else {
-                    if (logger.isWarnEnabled()) logger.warn("Skipping unrecognized binlog event "
-                                                            + LogEvent.getTypeName(header.getType()) + " from: "
-                                                            + context.getLogPosition());
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Skipping unrecognized binlog event " + LogEvent.getTypeName(header.getType()) + " from: " + context.getLogPosition());
+                    }
                 }
         }
 

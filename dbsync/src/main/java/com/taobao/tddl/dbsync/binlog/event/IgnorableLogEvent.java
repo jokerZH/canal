@@ -25,11 +25,8 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
  * @since mysql 5.6
  */
 public class IgnorableLogEvent extends LogEvent {
-
     public IgnorableLogEvent(LogHeader header, LogBuffer buffer, FormatDescriptionLogEvent descriptionEvent){
         super(header);
-
         // do nothing , just ignore log event
     }
-
 }

@@ -2,6 +2,7 @@ package com.taobao.tddl.dbsync.binlog;
 
 /**
  * 处理下MySQL json二进制转化为可读的字符串
+ * TODO
  * 
  * @author agapple 2016年6月30日 上午11:26:17
  * @since 1.0.22
@@ -57,19 +58,22 @@ public class JsonConversion {
         switch (type) {
             case JSONB_TYPE_SMALL_OBJECT:
                 return parse_array_or_object(Json_enum_type.OBJECT, buffer, len, false, charsetName);
+
             case JSONB_TYPE_LARGE_OBJECT:
                 return parse_array_or_object(Json_enum_type.OBJECT, buffer, len, true, charsetName);
+
             case JSONB_TYPE_SMALL_ARRAY:
                 return parse_array_or_object(Json_enum_type.ARRAY, buffer, len, false, charsetName);
+
             case JSONB_TYPE_LARGE_ARRAY:
                 return parse_array_or_object(Json_enum_type.ARRAY, buffer, len, true, charsetName);
+
             default:
                 return parse_scalar(type, buffer, len, charsetName);
         }
     }
 
-    private static Json_Value parse_array_or_object(Json_enum_type type, LogBuffer buffer, long len, boolean large,
-                                                    String charsetName) {
+    private static Json_Value parse_array_or_object(Json_enum_type type, LogBuffer buffer, long len, boolean large, String charsetName) {
         long offset_size = large ? LARGE_OFFSET_SIZE : SMALL_OFFSET_SIZE;
         if (len < 2 * offset_size) {
             throw new IllegalArgumentException("illegal json data");
