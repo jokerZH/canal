@@ -8,12 +8,14 @@ import com.alibaba.otter.canal.parse.driver.mysql.packets.HeaderPacket;
 
 public abstract class PacketManager {
 
+    /* 读取包头部 */
     public static HeaderPacket readHeader(SocketChannel ch, int len) throws IOException {
         HeaderPacket header = new HeaderPacket();
         header.fromBytes(readBytesAsBuffer(ch, len).array());
         return header;
     }
 
+    /* 从ch读取len长度的数据 */
     public static ByteBuffer readBytesAsBuffer(SocketChannel ch, int len) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(len);
         while (buffer.hasRemaining()) {
@@ -34,11 +36,6 @@ public abstract class PacketManager {
      * length to simplify the read operation.<br>
      * If the block write doesn't work as we expected, we will change this
      * implementation as per the result.
-     * 
-     * @param ch
-     * @param len
-     * @return
-     * @throws IOException
      */
     public static void write(SocketChannel ch, ByteBuffer[] srcs) throws IOException {
         @SuppressWarnings("unused")

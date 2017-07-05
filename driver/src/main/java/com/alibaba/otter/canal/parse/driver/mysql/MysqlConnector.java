@@ -19,44 +19,34 @@ import com.alibaba.otter.canal.parse.driver.mysql.packets.server.Reply323Packet;
 import com.alibaba.otter.canal.parse.driver.mysql.utils.MySQLPasswordEncrypter;
 import com.alibaba.otter.canal.parse.driver.mysql.utils.PacketManager;
 
-/**
- * 基于mysql socket协议的链接实现
- * 
- * @author jianghang 2013-2-18 下午09:22:30
- * @version 1.0.1
- */
+/* 基于mysql socket协议的链接实现 */
 public class MysqlConnector {
+    private static final Logger logger = LoggerFactory.getLogger(MysqlConnector.class);
 
-    private static final Logger logger            = LoggerFactory.getLogger(MysqlConnector.class);
-    private InetSocketAddress   address;
-    private String              username;
-    private String              password;
+    private InetSocketAddress address;  // ip port
+    private String username;            // user
+    private String password;            // password
 
-    private byte                charsetNumber     = 33;
-    private String              defaultSchema     = "retl";
-    private int                 soTimeout         = 30 * 1000;
-    private int                 receiveBufferSize = 16 * 1024;
-    private int                 sendBufferSize    = 16 * 1024;
+    private byte charsetNumber = 33;
+    private String defaultSchema = "retl";
+    private int soTimeout = 30 * 1000;
+    private int receiveBufferSize = 16 * 1024;
+    private int sendBufferSize = 16 * 1024;
 
-    private SocketChannel       channel;
-    private volatile boolean    dumping           = false;
-    // mysql connectinnId
-    private long                connectionId      = -1;
-    private AtomicBoolean       connected         = new AtomicBoolean(false);
+    private SocketChannel channel;
+    private volatile boolean dumping = false;
+    private long connectionId = -1;     // mysql connectinnId
+    private AtomicBoolean connected = new AtomicBoolean(false);
 
-    public MysqlConnector(){
-    }
-
-    public MysqlConnector(InetSocketAddress address, String username, String password){
+    public MysqlConnector() { }
+    public MysqlConnector(InetSocketAddress address, String username, String password) {
         this.address = address;
         this.username = username;
         this.password = password;
     }
 
-    public MysqlConnector(InetSocketAddress address, String username, String password, byte charsetNumber,
-                          String defaultSchema){
+    public MysqlConnector(InetSocketAddress address, String username, String password, byte charsetNumber, String defaultSchema) {
         this(address, username, password);
-
         this.charsetNumber = charsetNumber;
         this.defaultSchema = defaultSchema;
     }
@@ -143,7 +133,7 @@ public class MysqlConnector {
         quitHeader.setPacketBodyLength(cmdBody.length);
         quitHeader.setPacketSequenceNumber((byte) 0x00);
         PacketManager.write(channel,
-            new ByteBuffer[] { ByteBuffer.wrap(quitHeader.toBytes()), ByteBuffer.wrap(cmdBody) });
+                new ByteBuffer[]{ByteBuffer.wrap(quitHeader.toBytes()), ByteBuffer.wrap(cmdBody)});
     }
 
     // ====================== help method ====================
@@ -157,10 +147,12 @@ public class MysqlConnector {
         channel.socket().setSendBufferSize(sendBufferSize);
     }
 
+    /* 和mysql服务端处理权限验证 */
     private void negotiate(SocketChannel channel) throws IOException {
         HeaderPacket header = PacketManager.readHeader(channel, 4);
         byte[] body = PacketManager.readBytes(channel, header.getPacketBodyLength());
-        if (body[0] < 0) {// check field_count
+        if (body[0] < 0) {
+            // check field_count
             if (body[0] == -1) {
                 ErrorPacket error = new ErrorPacket();
                 error.fromBytes(body);
@@ -192,7 +184,7 @@ public class MysqlConnector {
         h.setPacketSequenceNumber((byte) (header.getPacketSequenceNumber() + 1));
 
         PacketManager.write(channel,
-            new ByteBuffer[] { ByteBuffer.wrap(h.toBytes()), ByteBuffer.wrap(clientAuthPkgBody) });
+                new ByteBuffer[]{ByteBuffer.wrap(h.toBytes()), ByteBuffer.wrap(clientAuthPkgBody)});
         logger.info("client authentication packet is sent out.");
 
         // check auth result
@@ -228,7 +220,7 @@ public class MysqlConnector {
         h323.setPacketBodyLength(b323Body.length);
         h323.setPacketSequenceNumber((byte) (packetSequenceNumber + 1));
 
-        PacketManager.write(channel, new ByteBuffer[] { ByteBuffer.wrap(h323.toBytes()), ByteBuffer.wrap(b323Body) });
+        PacketManager.write(channel, new ByteBuffer[]{ByteBuffer.wrap(h323.toBytes()), ByteBuffer.wrap(b323Body)});
         logger.info("client 323 authentication packet is sent out.");
         // check auth result
         HeaderPacket header = PacketManager.readHeader(channel, 4);
@@ -250,95 +242,33 @@ public class MysqlConnector {
         byte[] dest = new byte[handshakePacket.seed.length + handshakePacket.restOfScrambleBuff.length];
         System.arraycopy(handshakePacket.seed, 0, dest, 0, handshakePacket.seed.length);
         System.arraycopy(handshakePacket.restOfScrambleBuff,
-            0,
-            dest,
-            handshakePacket.seed.length,
-            handshakePacket.restOfScrambleBuff.length);
+                0,
+                dest,
+                handshakePacket.seed.length,
+                handshakePacket.restOfScrambleBuff.length);
         return dest;
     }
 
-    public InetSocketAddress getAddress() {
-        return address;
-    }
-
-    public void setAddress(InetSocketAddress address) {
-        this.address = address;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public byte getCharsetNumber() {
-        return charsetNumber;
-    }
-
-    public void setCharsetNumber(byte charsetNumber) {
-        this.charsetNumber = charsetNumber;
-    }
-
-    public String getDefaultSchema() {
-        return defaultSchema;
-    }
-
-    public void setDefaultSchema(String defaultSchema) {
-        this.defaultSchema = defaultSchema;
-    }
-
-    public int getSoTimeout() {
-        return soTimeout;
-    }
-
-    public void setSoTimeout(int soTimeout) {
-        this.soTimeout = soTimeout;
-    }
-
-    public int getReceiveBufferSize() {
-        return receiveBufferSize;
-    }
-
-    public void setReceiveBufferSize(int receiveBufferSize) {
-        this.receiveBufferSize = receiveBufferSize;
-    }
-
-    public int getSendBufferSize() {
-        return sendBufferSize;
-    }
-
-    public void setSendBufferSize(int sendBufferSize) {
-        this.sendBufferSize = sendBufferSize;
-    }
-
-    public SocketChannel getChannel() {
-        return channel;
-    }
-
-    public void setChannel(SocketChannel channel) {
-        this.channel = channel;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public long getConnectionId() {
-        return connectionId;
-    }
-
-    public void setConnectionId(long connectionId) {
-        this.connectionId = connectionId;
-    }
-
-    public boolean isDumping() {
-        return dumping;
-    }
-
-    public void setDumping(boolean dumping) {
-        this.dumping = dumping;
-    }
-
+    // ================== setter / getter ===================
+    public InetSocketAddress getAddress() { return address; }
+    public void setAddress(InetSocketAddress address) { this.address = address; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public byte getCharsetNumber() { return charsetNumber; }
+    public void setCharsetNumber(byte charsetNumber) { this.charsetNumber = charsetNumber; }
+    public String getDefaultSchema() { return defaultSchema; }
+    public void setDefaultSchema(String defaultSchema) { this.defaultSchema = defaultSchema; }
+    public int getSoTimeout() { return soTimeout; }
+    public void setSoTimeout(int soTimeout) { this.soTimeout = soTimeout; }
+    public int getReceiveBufferSize() { return receiveBufferSize; }
+    public void setReceiveBufferSize(int receiveBufferSize) { this.receiveBufferSize = receiveBufferSize; }
+    public int getSendBufferSize() { return sendBufferSize; }
+    public void setSendBufferSize(int sendBufferSize) { this.sendBufferSize = sendBufferSize; }
+    public SocketChannel getChannel() { return channel; }
+    public void setChannel(SocketChannel channel) { this.channel = channel; }
+    public void setPassword(String password) { this.password = password; }
+    public long getConnectionId() { return connectionId; }
+    public void setConnectionId(long connectionId) { this.connectionId = connectionId; }
+    public boolean isDumping() { return dumping; }
+    public void setDumping(boolean dumping) { this.dumping = dumping; }
 }

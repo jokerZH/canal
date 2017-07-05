@@ -1,77 +1,38 @@
 package com.alibaba.otter.canal.protocol.position;
 
-/**
- * 数据库对象的唯一标示
- * 
- * @author jianghang 2012-6-14 下午09:20:07
- * @version 1.0.0
- */
+/* binlog的唯一标示 */
 public class EntryPosition extends TimePosition {
+    private static final long serialVersionUID = 81432665066427482L;
+    public static final int EVENTIDENTITY_SEGMENT = 3;
+    public static final char EVENTIDENTITY_SPLIT = (char) 5;
 
-    private static final long serialVersionUID      = 81432665066427482L;
-    public static final int   EVENTIDENTITY_SEGMENT = 3;
-    public static final char  EVENTIDENTITY_SPLIT   = (char) 5;
+    private boolean included = false;
+    private String journalName;         // 文件名
+    private Long position;              // 偏移
+    private Long serverId = null;       // 记录一下位点对应的serverId
 
-    private boolean           included              = false;
-    private String            journalName;
-    private Long              position;
-    // add by agapple at 2016-06-28
-    private Long              serverId              = null;              // 记录一下位点对应的serverId
-
-    public EntryPosition(){
-        super(null);
-    }
-
-    public EntryPosition(Long timestamp){
-        this(null, null, timestamp);
-    }
-
-    public EntryPosition(String journalName, Long position){
-        this(journalName, position, null);
-    }
-
-    public EntryPosition(String journalName, Long position, Long timestamp){
+    public EntryPosition() { super(null); }
+    public EntryPosition(Long timestamp) { this(null, null, timestamp); }
+    public EntryPosition(String journalName, Long position) { this(journalName, position, null); }
+    public EntryPosition(String journalName, Long position, Long timestamp) {
         super(timestamp);
         this.journalName = journalName;
         this.position = position;
     }
 
-    public EntryPosition(String journalName, Long position, Long timestamp, Long serverId){
+    public EntryPosition(String journalName, Long position, Long timestamp, Long serverId) {
         this(journalName, position, timestamp);
         this.serverId = serverId;
     }
 
-    public String getJournalName() {
-        return journalName;
-    }
-
-    public void setJournalName(String journalName) {
-        this.journalName = journalName;
-    }
-
-    public Long getPosition() {
-        return position;
-    }
-
-    public void setPosition(Long position) {
-        this.position = position;
-    }
-
-    public boolean isIncluded() {
-        return included;
-    }
-
-    public void setIncluded(boolean included) {
-        this.included = included;
-    }
-
-    public Long getServerId() {
-        return serverId;
-    }
-
-    public void setServerId(Long serverId) {
-        this.serverId = serverId;
-    }
+    public String getJournalName() { return journalName; }
+    public void setJournalName(String journalName) { this.journalName = journalName; }
+    public Long getPosition() { return position; }
+    public void setPosition(Long position) { this.position = position; }
+    public boolean isIncluded() { return included; }
+    public void setIncluded(boolean included) { this.included = included; }
+    public Long getServerId() { return serverId; }
+    public void setServerId(Long serverId) { this.serverId = serverId; }
 
     @Override
     public int hashCode() {
@@ -120,5 +81,4 @@ public class EntryPosition extends TimePosition {
         }
         return true;
     }
-
 }

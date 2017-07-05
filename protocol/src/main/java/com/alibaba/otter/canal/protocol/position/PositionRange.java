@@ -1,56 +1,30 @@
 package com.alibaba.otter.canal.protocol.position;
 
 import java.io.Serializable;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
-
 import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 
-/**
- * 描述一个position范围
- * 
- * @author jianghang 2012-7-10 下午05:28:38
- * @version 1.0.0
- */
+/* 描述一个position范围 */
 public class PositionRange<T extends Position> implements Serializable {
-
     private static final long serialVersionUID = -9162037079815694784L;
-    private T                 start;
+
+    private T start;
     // add by ljh at 2012-09-05，用于记录一个可被ack的位置，保证每次提交到cursor中的位置是一个完整事务的结束
-    private T                 ack;
-    private T                 end;
+    private T ack;
+    private T end;
 
-    public PositionRange(){
-    }
-
-    public PositionRange(T start, T end){
+    public PositionRange() { }
+    public PositionRange(T start, T end) {
         this.start = start;
         this.end = end;
     }
 
-    public T getStart() {
-        return start;
-    }
-
-    public void setStart(T start) {
-        this.start = start;
-    }
-
-    public T getEnd() {
-        return end;
-    }
-
-    public void setEnd(T end) {
-        this.end = end;
-    }
-
-    public T getAck() {
-        return ack;
-    }
-
-    public void setAck(T ack) {
-        this.ack = ack;
-    }
+    public T getStart() { return start; }
+    public void setStart(T start) { this.start = start; }
+    public T getEnd() { return end; }
+    public void setEnd(T end) { this.end = end; }
+    public T getAck() { return ack; }
+    public void setAck(T ack) { this.ack = ack; }
 
     @Override
     public String toString() {
@@ -102,5 +76,4 @@ public class PositionRange<T extends Position> implements Serializable {
         }
         return true;
     }
-
 }

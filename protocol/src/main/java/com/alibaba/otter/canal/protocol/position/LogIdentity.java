@@ -6,39 +6,23 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 
-/**
- * @author jianghang 2012-6-21 上午10:52:02
- * @version 1.0.0
- */
+/* 唯一定位slave */
 public class LogIdentity extends Position {
-
     private static final long serialVersionUID = 5530225131455662581L;
+
     private InetSocketAddress sourceAddress;                          // 链接服务器的地址
     private Long              slaveId;                                // 对应的slaveId
 
-    public LogIdentity(){
-    }
-
+    public LogIdentity(){ }
     public LogIdentity(InetSocketAddress sourceAddress, Long slaveId){
         this.sourceAddress = sourceAddress;
         this.slaveId = slaveId;
     }
 
-    public InetSocketAddress getSourceAddress() {
-        return sourceAddress;
-    }
-
-    public void setSourceAddress(InetSocketAddress sourceAddress) {
-        this.sourceAddress = sourceAddress;
-    }
-
-    public Long getSlaveId() {
-        return slaveId;
-    }
-
-    public void setSlaveId(Long slaveId) {
-        this.slaveId = slaveId;
-    }
+    public InetSocketAddress getSourceAddress() { return sourceAddress; }
+    public void setSourceAddress(InetSocketAddress sourceAddress) { this.sourceAddress = sourceAddress; }
+    public Long getSlaveId() { return slaveId; }
+    public void setSlaveId(Long slaveId) { this.slaveId = slaveId; }
 
     @Override
     public String toString() {

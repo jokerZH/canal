@@ -29,7 +29,6 @@ import com.taobao.tddl.dbsync.binlog.LogPosition;
 import com.taobao.tddl.dbsync.binlog.event.FormatDescriptionLogEvent;
 
 public class MysqlConnection implements ErosaConnection {
-
     private static final Logger logger  = LoggerFactory.getLogger(MysqlConnection.class);
 
     private MysqlConnector      connector;
@@ -39,9 +38,7 @@ public class MysqlConnection implements ErosaConnection {
     private BinlogImage         binlogImage;
     private int                 binlogChecksum;
 
-    public MysqlConnection(){
-    }
-
+    public MysqlConnection(){ }
     public MysqlConnection(InetSocketAddress address, String username, String password){
 
         connector = new MysqlConnector(address, username, password);
@@ -301,26 +298,14 @@ public class MysqlConnection implements ErosaConnection {
     }
 
     public static enum BinlogFormat {
-
         STATEMENT("STATEMENT"), ROW("ROW"), MIXED("MIXED");
-
-        public boolean isStatement() {
-            return this == STATEMENT;
-        }
-
-        public boolean isRow() {
-            return this == ROW;
-        }
-
-        public boolean isMixed() {
-            return this == MIXED;
-        }
-
         private String value;
 
-        private BinlogFormat(String value){
-            this.value = value;
-        }
+        private BinlogFormat(String value){ this.value = value; }
+
+        public boolean isMixed() { return this == MIXED; }
+        public boolean isStatement() { return this == STATEMENT; }
+        public boolean isRow() { return this == ROW; }
 
         public static BinlogFormat valuesOf(String value) {
             BinlogFormat[] formats = values();
@@ -334,33 +319,27 @@ public class MysqlConnection implements ErosaConnection {
     }
 
     /**
-     * http://dev.mysql.com/doc/refman/5.6/en/replication-options-binary-log.
-     * html#sysvar_binlog_row_image
-     * 
-     * @author agapple 2015年6月29日 下午10:39:03
-     * @since 1.0.20
+     * http://dev.mysql.com/doc/refman/5.6/en/replication-options-binary-log.html#sysvar_binlog_row_image
+     * 就是在update insert delete的时候是否需要将全部信息写入binlog
+     *
+     * full:    Log all columns in both the before image and the after image.
+     *
+     * minimal: Log only those columns in the before image that are required to identify the
+     *          row to be changed; log only those columns in the after image that are actually changed.
+     *
+     * noblob:  Log all columns (same as full), except for BLOB and TEXT columns that are not required
+     *          to identify rows, or that have not changed.
+     *
      */
     public static enum BinlogImage {
-
         FULL("FULL"), MINIMAL("MINIMAL"), NOBLOB("NOBLOB");
 
-        public boolean isFull() {
-            return this == FULL;
-        }
-
-        public boolean isMinimal() {
-            return this == MINIMAL;
-        }
-
-        public boolean isNoBlob() {
-            return this == NOBLOB;
-        }
-
         private String value;
+        private BinlogImage(String value){ this.value = value; }
 
-        private BinlogImage(String value){
-            this.value = value;
-        }
+        public boolean isNoBlob() { return this == NOBLOB; }
+        public boolean isFull() { return this == FULL; }
+        public boolean isMinimal() { return this == MINIMAL; }
 
         public static BinlogImage valuesOf(String value) {
             BinlogImage[] formats = values();
@@ -374,30 +353,12 @@ public class MysqlConnection implements ErosaConnection {
     }
 
     // ================== setter / getter ===================
-
-    public Charset getCharset() {
-        return charset;
-    }
-
-    public void setCharset(Charset charset) {
-        this.charset = charset;
-    }
-
-    public long getSlaveId() {
-        return slaveId;
-    }
-
-    public void setSlaveId(long slaveId) {
-        this.slaveId = slaveId;
-    }
-
-    public MysqlConnector getConnector() {
-        return connector;
-    }
-
-    public void setConnector(MysqlConnector connector) {
-        this.connector = connector;
-    }
+    public Charset getCharset() { return charset; }
+    public void setCharset(Charset charset) { this.charset = charset; }
+    public long getSlaveId() { return slaveId; }
+    public void setSlaveId(long slaveId) { this.slaveId = slaveId; }
+    public MysqlConnector getConnector() { return connector; }
+    public void setConnector(MysqlConnector connector) { this.connector = connector; }
 
     public BinlogFormat getBinlogFormat() {
         if (binlogFormat == null) {
@@ -418,5 +379,4 @@ public class MysqlConnection implements ErosaConnection {
 
         return binlogImage;
     }
-
 }

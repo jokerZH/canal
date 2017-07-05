@@ -5,27 +5,25 @@ import java.io.IOException;
 import com.alibaba.otter.canal.parse.driver.mysql.packets.PacketWithHeaderPacket;
 import com.alibaba.otter.canal.parse.driver.mysql.utils.ByteHelper;
 
+/**
+ * VERSION 4.1
+ *  Bytes                       Name
+ *  -----                       ----
+ *  1                           field_count, always = 0xff
+ *  2                           errno
+ *  1                           (sqlstate marker), always '#'
+ *  5                           sqlstate (5 characters)
+ *  n                           message
+ *
+ */
 public class ErrorPacket extends PacketWithHeaderPacket {
-
     public byte   fieldCount;
     public int    errorNumber;
     public byte   sqlStateMarker;
     public byte[] sqlState;
     public String message;
 
-    /**
-     * <pre>
-     * VERSION 4.1
-     *  Bytes                       Name
-     *  -----                       ----
-     *  1                           field_count, always = 0xff
-     *  2                           errno
-     *  1                           (sqlstate marker), always '#'
-     *  5                           sqlstate (5 characters)
-     *  n                           message
-     * 
-     * </pre>
-     */
+
     public void fromBytes(byte[] data) {
         int index = 0;
         // 1. read field count
@@ -45,9 +43,7 @@ public class ErrorPacket extends PacketWithHeaderPacket {
         // end read
     }
 
-    public byte[] toBytes() throws IOException {
-        return null;
-    }
+    public byte[] toBytes() throws IOException { return null; }
 
     @Override
     public String toString() {
@@ -62,5 +58,4 @@ public class ErrorPacket extends PacketWithHeaderPacket {
         }
         return builder.toString();
     }
-
 }
