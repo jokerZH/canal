@@ -7,8 +7,8 @@ import java.util.List;
 import com.alibaba.otter.canal.parse.driver.mysql.packets.PacketWithHeaderPacket;
 import com.alibaba.otter.canal.parse.driver.mysql.utils.LengthCodedStringReader;
 
+/* 保存各个字段的数据，一个包一行数据 */
 public class RowDataPacket extends PacketWithHeaderPacket {
-
     private List<String> columns = new ArrayList<String>();
 
     public void fromBytes(byte[] data) throws IOException {
@@ -19,20 +19,8 @@ public class RowDataPacket extends PacketWithHeaderPacket {
         } while (reader.getIndex() < data.length);
     }
 
-    public byte[] toBytes() throws IOException {
-        return null;
-    }
-
-    public void setColumns(List<String> columns) {
-        this.columns = columns;
-    }
-
-    public List<String> getColumns() {
-        return columns;
-    }
-
-    public String toString() {
-        return "RowDataPacket [columns=" + columns + "]";
-    }
-
+    public byte[] toBytes() throws IOException { return null; }
+    public void setColumns(List<String> columns) { this.columns = columns; }
+    public List<String> getColumns() { return columns; }
+    public String toString() { return "RowDataPacket [columns=" + columns + "]"; }
 }

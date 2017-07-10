@@ -5,24 +5,14 @@ import java.io.IOException;
 
 import com.alibaba.otter.canal.parse.driver.mysql.packets.CommandPacket;
 
-/**
- * quit cmd
- * 
- * @author agapple 2016年3月1日 下午8:33:02
- * @since 1.0.22
- */
+/* quit cmd */
 public class QuitCommandPacket extends CommandPacket {
-
     public static final byte[] QUIT = new byte[] { 1, 0, 0, 0, 1 };
 
-    public QuitCommandPacket(){
-        setCommand((byte) 0x01);
-    }
+    public QuitCommandPacket(){ setCommand((byte) 0x01); }
 
     @Override
-    public void fromBytes(byte[] data) throws IOException {
-
-    }
+    public void fromBytes(byte[] data) throws IOException { }
 
     @Override
     public byte[] toBytes() throws IOException {
@@ -31,5 +21,4 @@ public class QuitCommandPacket extends CommandPacket {
         out.write(QUIT);
         return out.toByteArray();
     }
-
 }

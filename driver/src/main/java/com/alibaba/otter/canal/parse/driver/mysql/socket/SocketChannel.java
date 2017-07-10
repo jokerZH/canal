@@ -9,24 +9,17 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 
-/**
- * 封装netty的通信channel和数据接收缓存，实现读、写、连接校验的功能。 2016-12-28
- * 
- * @author luoyaogui
- */
+/* 封装netty的通信channel和数据接收缓存，实现读、写、连接校验的功能。 */
 public class SocketChannel {
-
     private Channel channel = null;
     private Object  lock    = new Object();
-    private ByteBuf cache   = PooledByteBufAllocator.DEFAULT.directBuffer(1024 * 1024 * 5); // 缓存大小
+    private ByteBuf cache   = PooledByteBufAllocator.DEFAULT.directBuffer(1024 * 1024 * 5);     // 缓存大小
 
-    public Channel getChannel() {
-        return channel;
-    }
-
+    public Channel getChannel() { return channel; }
     public void setChannel(Channel channel, boolean notify) {
         this.channel = channel;
-        if (notify) {// 是否需要通知，主要是channel不可用时
+        if (notify) {
+            // 是否需要通知，主要是channel不可用时
             synchronized (this) {
                 notifyAll();
             }
@@ -35,7 +28,8 @@ public class SocketChannel {
 
     public void writeCache(ByteBuf buf) {
         synchronized (lock) {
-            cache.discardReadBytes();// 回收内存
+            // 回收内存
+            cache.discardReadBytes();
             cache.writeBytes(buf);
         }
         synchronized (this) {
@@ -71,14 +65,8 @@ public class SocketChannel {
         return 0;
     }
 
-    public boolean isConnected() {
-        return channel != null ? true : false;
-    }
-
-    public SocketAddress getRemoteSocketAddress() {
-        return channel != null ? channel.remoteAddress() : null;
-    }
-
+    public boolean isConnected() { return channel != null ? true : false; }
+    public SocketAddress getRemoteSocketAddress() { return channel != null ? channel.remoteAddress() : null; }
     public void close() {
         if (channel != null) {
             channel.close();

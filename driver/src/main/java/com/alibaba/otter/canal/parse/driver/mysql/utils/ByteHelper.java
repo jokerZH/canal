@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public abstract class ByteHelper {
-
     public static final long NULL_LENGTH = -1;
 
     public static byte[] readNullTerminatedBytes(byte[] data, int index) {
@@ -35,13 +34,7 @@ public abstract class ByteHelper {
         return bytes;
     }
 
-    /**
-     * Read 4 bytes in Little-endian byte order.
-     * 
-     * @param data, the original byte array
-     * @param index, start to read from.
-     * @return
-     */
+    /* Read 4 bytes in Little-endian byte order */
     public static long readUnsignedIntLittleEndian(byte[] data, int index) {
         long result = (long) (data[index] & 0xFF) | (long) ((data[index + 1] & 0xFF) << 8)
                       | (long) ((data[index + 2] & 0xFF) << 16) | (long) ((data[index + 3] & 0xFF) << 24);
@@ -154,5 +147,4 @@ public abstract class ByteHelper {
     public static void writeFixedLengthBytesFromStart(byte[] data, int length, ByteArrayOutputStream out) {
         writeFixedLengthBytes(data, 0, length, out);
     }
-
 }

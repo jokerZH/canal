@@ -7,13 +7,9 @@ import com.alibaba.otter.canal.parse.driver.mysql.packets.PacketWithHeaderPacket
 import com.alibaba.otter.canal.parse.driver.mysql.utils.ByteHelper;
 
 public class Reply323Packet extends PacketWithHeaderPacket {
-
     public byte[] seed;
 
-    public void fromBytes(byte[] data) throws IOException {
-
-    }
-
+    public void fromBytes(byte[] data) throws IOException { }
     public byte[] toBytes() throws IOException {
         if (seed == null) {
             return new byte[] { (byte) 0 };
@@ -23,5 +19,4 @@ public class Reply323Packet extends PacketWithHeaderPacket {
             return out.toByteArray();
         }
     }
-
 }

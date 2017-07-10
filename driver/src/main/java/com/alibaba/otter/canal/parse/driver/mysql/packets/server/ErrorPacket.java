@@ -14,7 +14,6 @@ import com.alibaba.otter.canal.parse.driver.mysql.utils.ByteHelper;
  *  1                           (sqlstate marker), always '#'
  *  5                           sqlstate (5 characters)
  *  n                           message
- *
  */
 public class ErrorPacket extends PacketWithHeaderPacket {
     public byte   fieldCount;

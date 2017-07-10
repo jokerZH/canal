@@ -6,12 +6,9 @@ import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 import com.google.common.base.Preconditions;
 
 public abstract class PacketWithHeaderPacket implements IPacket {
-
     protected HeaderPacket header;
 
-    protected PacketWithHeaderPacket(){
-    }
-
+    protected PacketWithHeaderPacket(){ }
     protected PacketWithHeaderPacket(HeaderPacket header){
         setHeader(header);
     }
@@ -25,8 +22,5 @@ public abstract class PacketWithHeaderPacket implements IPacket {
         return header;
     }
 
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, CanalToStringStyle.DEFAULT_STYLE);
-    }
-
+    public String toString() { return ToStringBuilder.reflectionToString(this, CanalToStringStyle.DEFAULT_STYLE); }
 }

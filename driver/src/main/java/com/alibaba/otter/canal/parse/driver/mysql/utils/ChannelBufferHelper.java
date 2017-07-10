@@ -12,7 +12,6 @@ import com.alibaba.otter.canal.parse.driver.mysql.packets.IPacket;
 import com.alibaba.otter.canal.parse.driver.mysql.packets.PacketWithHeaderPacket;
 
 public class ChannelBufferHelper {
-
     protected transient final Logger logger = LoggerFactory.getLogger(ChannelBufferHelper.class);
 
     public final HeaderPacket assembleHeaderPacket(ChannelBuffer buffer) {
@@ -23,8 +22,7 @@ public class ChannelBufferHelper {
         return header;
     }
 
-    public final PacketWithHeaderPacket assembleBodyPacketWithHeader(ChannelBuffer buffer, HeaderPacket header,
-                                                                     PacketWithHeaderPacket body) throws IOException {
+    public final PacketWithHeaderPacket assembleBodyPacketWithHeader(ChannelBuffer buffer, HeaderPacket header, PacketWithHeaderPacket body) throws IOException {
         if (body.getHeader() == null) {
             body.setHeader(header);
         }
