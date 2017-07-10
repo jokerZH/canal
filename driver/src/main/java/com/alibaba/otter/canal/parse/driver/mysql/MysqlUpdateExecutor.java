@@ -11,19 +11,13 @@ import com.alibaba.otter.canal.parse.driver.mysql.packets.server.ErrorPacket;
 import com.alibaba.otter.canal.parse.driver.mysql.packets.server.OKPacket;
 import com.alibaba.otter.canal.parse.driver.mysql.utils.PacketManager;
 
-/**
- * 默认输出的数据编码为UTF-8，如有需要请正确转码
- * 
- * @author jianghang 2013-9-4 上午11:51:11
- * @since 1.0.0
- */
+/* 默认输出的数据编码为UTF-8，如有需要请正确转码 执行mysql等update操作  */
 public class MysqlUpdateExecutor {
-
     private static final Logger logger = LoggerFactory.getLogger(MysqlUpdateExecutor.class);
 
-    private SocketChannel       channel;
+    private SocketChannel channel;
 
-    public MysqlUpdateExecutor(MysqlConnector connector) throws IOException{
+    public MysqlUpdateExecutor(MysqlConnector connector) throws IOException {
         if (!connector.isConnected()) {
             throw new IOException("should execute connector.connect() first");
         }
@@ -31,10 +25,7 @@ public class MysqlUpdateExecutor {
         this.channel = connector.getChannel();
     }
 
-    public MysqlUpdateExecutor(SocketChannel ch){
-        this.channel = ch;
-    }
-
+    public MysqlUpdateExecutor(SocketChannel ch) { this.channel = ch; }
     public OKPacket update(String updateString) throws IOException {
         QueryCommandPacket cmd = new QueryCommandPacket();
         cmd.setQueryString(updateString);

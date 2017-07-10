@@ -12,36 +12,25 @@ import org.slf4j.LoggerFactory;
 
 import com.taobao.tddl.dbsync.binlog.LogFetcher;
 
-/**
- * 基于socket的logEvent实现
- * 
- * @author jianghang 2013-1-14 下午07:39:30
- * @version 1.0.0
- */
+/* 基于socket的logEvent实现 */
 public class DirectLogFetcher extends LogFetcher {
     protected static final Logger logger = LoggerFactory.getLogger(DirectLogFetcher.class);
 
     public static final byte COM_BINLOG_DUMP = 18;  /* Command to dump binlog */
-
     public static final int NET_HEADER_SIZE = 4;    /* Packet header sizes */
     public static final int SQLSTATE_LENGTH = 5;    /* sql状态string固定长度 */
-
     public static final int PACKET_LEN_OFFSET = 0;  /* Packet offsets */
     public static final int PACKET_SEQ_OFFSET = 3;  /* Packet seq */
-
-    /* Maximum packet length */
-    public static final int MAX_PACKET_LENGTH = (256 * 256 * 256 - 1);
+    public static final int MAX_PACKET_LENGTH = (256 * 256 * 256 - 1);  /* Maximum packet length */
 
     private SocketChannel channel;
 
     public DirectLogFetcher() { super(DEFAULT_INITIAL_CAPACITY, DEFAULT_GROWTH_FACTOR); }
     public DirectLogFetcher(final int initialCapacity) { super(initialCapacity, DEFAULT_GROWTH_FACTOR); }
     public DirectLogFetcher(final int initialCapacity, final float growthFactor) { super(initialCapacity, growthFactor); }
+    public void start(SocketChannel channel) throws IOException { this.channel = channel; }
 
-    public void start(SocketChannel channel) throws IOException {
-        this.channel = channel;
-    }
-
+    // 获得一个binlog 数据包
     public boolean fetch() throws IOException {
         try {
             // Fetching packet header from input.

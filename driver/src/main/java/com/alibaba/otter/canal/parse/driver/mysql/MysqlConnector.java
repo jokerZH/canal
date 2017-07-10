@@ -51,6 +51,7 @@ public class MysqlConnector {
         this.defaultSchema = defaultSchema;
     }
 
+    // 连接mysql服务端，包括权限验证
     public void connect() throws IOException {
         if (connected.compareAndSet(false, true)) {
             try {
@@ -73,6 +74,7 @@ public class MysqlConnector {
         connect();
     }
 
+    // 关闭连接，并向mysql服务端发送关闭连接等请求
     public void disconnect() throws IOException {
         if (connected.compareAndSet(true, false)) {
             try {

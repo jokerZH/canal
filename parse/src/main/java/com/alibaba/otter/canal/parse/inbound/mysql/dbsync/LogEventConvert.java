@@ -54,13 +54,10 @@ import com.taobao.tddl.dbsync.binlog.event.XidLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.mariadb.AnnotateRowsEvent;
 
 /**
- * 基于{@linkplain LogEvent}转化为Entry对象的处理
- * 
- * @author jianghang 2013-1-17 下午02:41:14
- * @version 1.0.0
+ * 基于LogEvent转化为Entry对象的处理
+ * binlog数据转化为结构化的数据
  */
 public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogParser<LogEvent> {
-
     public static final String          ISO_8859_1          = "ISO-8859-1";
     public static final String          UTF_8               = "UTF-8";
     public static final int             TINYINT_MAX_VALUE   = 256;

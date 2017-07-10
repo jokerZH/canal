@@ -14,7 +14,7 @@ import com.alibaba.otter.canal.parse.driver.mysql.packets.server.ResultSetPacket
 import com.alibaba.otter.canal.parse.driver.mysql.packets.server.RowDataPacket;
 import com.alibaba.otter.canal.parse.driver.mysql.utils.PacketManager;
 
-/* 默认输出的数据编码为UTF-8，如有需要请正确转码 */
+/* 默认输出的数据编码为UTF-8，如有需要请正确转码 执行sql语句 */
 public class MysqlQueryExecutor {
     private SocketChannel channel;
 
@@ -26,9 +26,7 @@ public class MysqlQueryExecutor {
         this.channel = connector.getChannel();
     }
 
-    public MysqlQueryExecutor(SocketChannel ch){
-        this.channel = ch;
-    }
+    public MysqlQueryExecutor(SocketChannel ch){ this.channel = ch; }
 
     /**
      * (Result Set Header Packet) the number of columns <br>
@@ -36,10 +34,6 @@ public class MysqlQueryExecutor {
      * (EOF Packet) marker: end of Field Packets <br>
      * (Row Data Packets) row contents <br>
      * (EOF Packet) marker: end of Data Packets
-     * 
-     * @param queryString
-     * @return
-     * @throws IOException
      */
     public ResultSetPacket query(String queryString) throws IOException {
         QueryCommandPacket cmd = new QueryCommandPacket();
@@ -94,6 +88,7 @@ public class MysqlQueryExecutor {
         }
     }
 
+    // 读取一个mysql数据包
     protected byte[] readNextPacket() throws IOException {
         HeaderPacket h = PacketManager.readHeader(channel, 4);
         return PacketManager.readBytes(channel, h.getPacketBodyLength());
