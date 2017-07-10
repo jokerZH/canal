@@ -36,12 +36,10 @@ public abstract class SocketChannelPool {
             .channel(NioSocketChannel.class)
             .option(ChannelOption.SO_RCVBUF, 32 * 1024)
             .option(ChannelOption.SO_SNDBUF, 32 * 1024)
-            .option(ChannelOption.TCP_NODELAY, true)
-            // 如果是延时敏感型应用，建议关闭Nagle算法
+            .option(ChannelOption.TCP_NODELAY, true)    // 如果是延时敏感型应用，建议关闭Nagle算法
             .option(ChannelOption.SO_KEEPALIVE, true)
             .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            //
             .handler(new ChannelInitializer() {
 
                 @Override
