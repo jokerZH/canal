@@ -30,17 +30,14 @@ public abstract class SocketChannelPool {
 
     static {
         boot.group(group)
-                .channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_RCVBUF, 32 * 1024)
-                .option(ChannelOption.SO_SNDBUF, 32 * 1024)
-                .option(ChannelOption.TCP_NODELAY, true)
-                // 如果是延时敏感型应用，建议关闭Nagle算法
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                //
-                .handler(new ChannelInitializer() {
-
+            .channel(NioSocketChannel.class)
+            .option(ChannelOption.SO_RCVBUF, 32 * 1024)
+            .option(ChannelOption.SO_SNDBUF, 32 * 1024)
+            .option(ChannelOption.TCP_NODELAY, true)    // 如果是延时敏感型应用，建议关闭Nagle算法
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            .handler(new ChannelInitializer() {
                     @Override
                     protected void initChannel(Channel arg0) throws Exception {
                         arg0.pipeline().addLast(new BusinessHandler());// 命令过滤和handler添加管理

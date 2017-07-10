@@ -163,6 +163,7 @@ public class MysqlConnector {
                 throw new IOException("unpexpected packet with field_count=" + body[0]);
             }
         }
+
         HandshakeInitializationPacket handshakePacket = new HandshakeInitializationPacket();
         handshakePacket.fromBytes(body);
         connectionId = handshakePacket.threadId; // 记录一下connection
@@ -240,11 +241,7 @@ public class MysqlConnector {
     private byte[] joinAndCreateScrumbleBuff(HandshakeInitializationPacket handshakePacket) throws IOException {
         byte[] dest = new byte[handshakePacket.seed.length + handshakePacket.restOfScrambleBuff.length];
         System.arraycopy(handshakePacket.seed, 0, dest, 0, handshakePacket.seed.length);
-        System.arraycopy(handshakePacket.restOfScrambleBuff,
-                0,
-                dest,
-                handshakePacket.seed.length,
-                handshakePacket.restOfScrambleBuff.length);
+        System.arraycopy(handshakePacket.restOfScrambleBuff, 0, dest, handshakePacket.seed.length, handshakePacket.restOfScrambleBuff.length);
         return dest;
     }
 
