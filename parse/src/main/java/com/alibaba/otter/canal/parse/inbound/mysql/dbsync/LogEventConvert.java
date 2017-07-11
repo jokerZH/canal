@@ -70,19 +70,17 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
     public static final String          COMMIT              = "COMMIT";
     public static final Logger          logger              = LoggerFactory.getLogger(LogEventConvert.class);
 
-    private volatile AviaterRegexFilter nameFilter;                                                          // 运行时引用可能会有变化，比如规则发生变化时
-    private volatile AviaterRegexFilter nameBlackFilter;
+    private volatile AviaterRegexFilter nameFilter;         // 运行时引用可能会有变化，比如规则发生变化时
+    private volatile AviaterRegexFilter nameBlackFilter;    // 黑名单
 
-    private TableMetaCache              tableMetaCache;
+    private TableMetaCache              tableMetaCache;     // 保存各个表的结构
     private String                      binlogFileName      = "mysql-bin.000001";
     private Charset                     charset             = Charset.defaultCharset();
     private boolean                     filterQueryDcl      = false;
     private boolean                     filterQueryDml      = false;
-    private boolean                     filterQueryDdl      = false;
-    // 是否跳过table相关的解析异常,比如表不存在或者列数量不匹配,issue 92
-    private boolean                     filterTableError    = false;
-    // 新增rows过滤，用于仅订阅除rows以外的数据
-    private boolean                     filterRows          = false;
+    private boolean                     filterQueryDdl      = false;    // 自动过滤调ddl语句
+    private boolean                     filterTableError    = false;    // 是否跳过table相关的解析异常,比如表不存在或者列数量不匹配,issue 92
+    private boolean                     filterRows          = false;    // 新增rows过滤，用于仅订阅除rows以外的数据
 
     public Entry parse(LogEvent logEvent) throws CanalParseException {
         if (logEvent == null || logEvent instanceof UnknownLogEvent) {
@@ -96,29 +94,40 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                 break;
             case LogEvent.QUERY_EVENT:
                 return parseQueryEvent((QueryLogEvent) logEvent);
+
             case LogEvent.XID_EVENT:
                 return parseXidEvent((XidLogEvent) logEvent);
+
             case LogEvent.TABLE_MAP_EVENT:
                 break;
+
             case LogEvent.WRITE_ROWS_EVENT_V1:
             case LogEvent.WRITE_ROWS_EVENT:
                 return parseRowsEvent((WriteRowsLogEvent) logEvent);
+
             case LogEvent.UPDATE_ROWS_EVENT_V1:
             case LogEvent.UPDATE_ROWS_EVENT:
                 return parseRowsEvent((UpdateRowsLogEvent) logEvent);
+
             case LogEvent.DELETE_ROWS_EVENT_V1:
             case LogEvent.DELETE_ROWS_EVENT:
                 return parseRowsEvent((DeleteRowsLogEvent) logEvent);
+
             case LogEvent.ROWS_QUERY_LOG_EVENT:
                 return parseRowsQueryEvent((RowsQueryLogEvent) logEvent);
+
             case LogEvent.ANNOTATE_ROWS_EVENT:
                 return parseAnnotateRowsEvent((AnnotateRowsEvent) logEvent);
+
             case LogEvent.USER_VAR_EVENT:
                 return parseUserVarLogEvent((UserVarLogEvent) logEvent);
+
             case LogEvent.INTVAR_EVENT:
                 return parseIntrvarLogEvent((IntvarLogEvent) logEvent);
+
             case LogEvent.RAND_EVENT:
                 return parseRandLogEvent((RandLogEvent) logEvent);
+
             default:
                 break;
         }
@@ -127,23 +136,25 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
     }
 
     public void reset() {
-        // do nothing
         binlogFileName = "mysql-bin.000001";
         if (tableMetaCache != null) {
             tableMetaCache.clearTableMeta();
         }
     }
 
+    /* 处理 begin commit ddl语句 */
     private Entry parseQueryEvent(QueryLogEvent event) {
         String queryString = event.getQuery();
         if (StringUtils.endsWithIgnoreCase(queryString, BEGIN)) {
             TransactionBegin transactionBegin = createTransactionBegin(event.getSessionId());
             Header header = createHeader(binlogFileName, event.getHeader(), "", "", null);
             return createEntry(header, EntryType.TRANSACTIONBEGIN, transactionBegin.toByteString());
+
         } else if (StringUtils.endsWithIgnoreCase(queryString, COMMIT)) {
             TransactionEnd transactionEnd = createTransactionEnd(0L); // MyISAM可能不会有xid事件
             Header header = createHeader(binlogFileName, event.getHeader(), "", "", null);
             return createEntry(header, EntryType.TRANSACTIONEND, transactionEnd.toByteString());
+
         } else {
             // DDL语句处理
             DdlResult result = SimpleDdlParser.parse(queryString, event.getDbName());
@@ -168,9 +179,9 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                 type = result.getType();
                 if (StringUtils.isEmpty(tableName)
                     || (result.getType() == EventType.RENAME && StringUtils.isEmpty(result.getOriTableName()))) {
+                    // 表名为空
                     // 如果解析不出tableName,记录一下日志，方便bugfix，目前直接抛出异常，中断解析
-                    throw new CanalParseException("SimpleDdlParser process query failed. pls submit issue with this queryString: "
-                                                  + queryString + " , and DdlResult: " + result.toString());
+                    throw new CanalParseException("SimpleDdlParser process query failed. pls submit issue with this queryString: " + queryString + " , and DdlResult: " + result.toString());
                     // return null;
                 } else {
                     // check name filter
@@ -201,8 +212,7 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                         }
                     }
                 }
-            } else if (result.getType() == EventType.INSERT || result.getType() == EventType.UPDATE
-                       || result.getType() == EventType.DELETE) {
+            } else if (result.getType() == EventType.INSERT || result.getType() == EventType.UPDATE || result.getType() == EventType.DELETE) {
                 // 对外返回，保证兼容，还是返回QUERY类型，这里暂不解析tableName，所以无法支持过滤
                 if (filterQueryDml) {
                     return null;
@@ -619,8 +629,7 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         return createEntry(header, EntryType.ROWDATA, rowChangeBuider.build().toByteString());
     }
 
-    private Header createHeader(String binlogFile, LogHeader logHeader, String schemaName, String tableName,
-                                EventType eventType) {
+    private Header createHeader(String binlogFile, LogHeader logHeader, String schemaName, String tableName, EventType eventType) {
         // header会做信息冗余,方便以后做检索或者过滤
         Header.Builder headerBuilder = Header.newBuilder();
         headerBuilder.setVersion(version);
@@ -716,40 +725,13 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         return entryBuilder.build();
     }
 
-    public void setCharset(Charset charset) {
-        this.charset = charset;
-    }
-
-    public void setNameFilter(AviaterRegexFilter nameFilter) {
-        this.nameFilter = nameFilter;
-    }
-
-    public void setNameBlackFilter(AviaterRegexFilter nameBlackFilter) {
-        this.nameBlackFilter = nameBlackFilter;
-    }
-
-    public void setTableMetaCache(TableMetaCache tableMetaCache) {
-        this.tableMetaCache = tableMetaCache;
-    }
-
-    public void setFilterQueryDcl(boolean filterQueryDcl) {
-        this.filterQueryDcl = filterQueryDcl;
-    }
-
-    public void setFilterQueryDml(boolean filterQueryDml) {
-        this.filterQueryDml = filterQueryDml;
-    }
-
-    public void setFilterQueryDdl(boolean filterQueryDdl) {
-        this.filterQueryDdl = filterQueryDdl;
-    }
-
-    public void setFilterTableError(boolean filterTableError) {
-        this.filterTableError = filterTableError;
-    }
-
-    public void setFilterRows(boolean filterRows) {
-        this.filterRows = filterRows;
-    }
-
+    public void setCharset(Charset charset) { this.charset = charset; }
+    public void setNameFilter(AviaterRegexFilter nameFilter) { this.nameFilter = nameFilter; }
+    public void setNameBlackFilter(AviaterRegexFilter nameBlackFilter) { this.nameBlackFilter = nameBlackFilter; }
+    public void setTableMetaCache(TableMetaCache tableMetaCache) { this.tableMetaCache = tableMetaCache; }
+    public void setFilterQueryDcl(boolean filterQueryDcl) { this.filterQueryDcl = filterQueryDcl; }
+    public void setFilterQueryDml(boolean filterQueryDml) { this.filterQueryDml = filterQueryDml; }
+    public void setFilterQueryDdl(boolean filterQueryDdl) { this.filterQueryDdl = filterQueryDdl; }
+    public void setFilterTableError(boolean filterTableError) { this.filterTableError = filterTableError; }
+    public void setFilterRows(boolean filterRows) { this.filterRows = filterRows; }
 }

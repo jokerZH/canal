@@ -17,12 +17,8 @@ import com.alibaba.otter.canal.protocol.CanalEntry.EventType;
  * </pre>
  * 
  * http://dev.mysql.com/doc/refman/5.6/en/sql-syntax-data-definition.html
- * 
- * @author jianghang 2013-1-22 下午10:03:22
- * @version 1.0.0
  */
 public class SimpleDdlParser {
-
     public static final String CREATE_PATTERN         = "^\\s*CREATE\\s*(TEMPORARY)?\\s*TABLE\\s*(.*)$";
     public static final String DROP_PATTERN           = "^\\s*DROP\\s*(TEMPORARY)?\\s*TABLE\\s*(.*)$";
     public static final String ALERT_PATTERN          = "^\\s*ALTER\\s*(IGNORE)?\\s*TABLE\\s*(.*)$";
@@ -35,20 +31,20 @@ public class SimpleDdlParser {
     public static final String RENAME_REMNANT_PATTERN = "^\\s*(.+?)\\s+TO\\s+(.+?)$";
 
     /**
-     * <pre>
      * CREATE [UNIQUE|FULLTEXT|SPATIAL] INDEX index_name
      *         [index_type]
      *         ON tbl_name (index_col_name,...)
      *         [algorithm_option | lock_option] ...
      *         
      * http://dev.mysql.com/doc/refman/5.6/en/create-index.html
-     * </pre>
      */
     public static final String CREATE_INDEX_PATTERN   = "^\\s*CREATE\\s*(UNIQUE)?(FULLTEXT)?(SPATIAL)?\\s*INDEX\\s*(.*?)\\s*ON\\s*(.*?)$";
     public static final String DROP_INDEX_PATTERN     = "^\\s*DROP\\s*INDEX\\s*(.*?)\\s*ON\\s*(.*?)$";
 
     public static DdlResult parse(String queryString, String schmeaName) {
-        queryString = removeComment(queryString); // 去除/* */的sql注释内容
+        // 去除/* */的sql注释内容
+        queryString = removeComment(queryString);
+
         DdlResult result = parseDdl(queryString, schmeaName, ALERT_PATTERN, 2);
         if (result != null) {
             result.setType(EventType.ALTER);
@@ -123,6 +119,7 @@ public class SimpleDdlParser {
         return result;
     }
 
+    // 匹配pattern
     private static DdlResult parseDdl(String queryString, String schmeaName, String pattern, int index) {
         Perl5Matcher matcher = new Perl5Matcher();
         if (matcher.matches(queryString, PatternUtils.getPattern(pattern))) {
@@ -220,26 +217,16 @@ public class SimpleDdlParser {
     }
 
     public static class DdlResult {
-
         private String    schemaName;
         private String    tableName;
         private String    oriSchemaName;    // rename ddl中的源表
         private String    oriTableName;     // rename ddl中的目标表
         private EventType type;
         private DdlResult renameTableResult; // 多个rename table的存储
+        /* RENAME TABLE tbl_name TO new_tbl_name [, tbl_name2 TO new_tbl_name2] ... */
 
-        /*
-         * RENAME TABLE tbl_name TO new_tbl_name [, tbl_name2 TO new_tbl_name2]
-         * ...
-         */
-
-        public DdlResult(){
-        }
-
-        public DdlResult(String schemaName){
-            this.schemaName = schemaName;
-        }
-
+        public DdlResult(){ }
+        public DdlResult(String schemaName){ this.schemaName = schemaName; }
         public DdlResult(String schemaName, String tableName){
             this.schemaName = schemaName;
             this.tableName = tableName;
@@ -252,53 +239,18 @@ public class SimpleDdlParser {
             this.oriTableName = oriTableName;
         }
 
-        public String getSchemaName() {
-            return schemaName;
-        }
-
-        public void setSchemaName(String schemaName) {
-            this.schemaName = schemaName;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public void setTableName(String tableName) {
-            this.tableName = tableName;
-        }
-
-        public EventType getType() {
-            return type;
-        }
-
-        public void setType(EventType type) {
-            this.type = type;
-        }
-
-        public String getOriSchemaName() {
-            return oriSchemaName;
-        }
-
-        public void setOriSchemaName(String oriSchemaName) {
-            this.oriSchemaName = oriSchemaName;
-        }
-
-        public String getOriTableName() {
-            return oriTableName;
-        }
-
-        public void setOriTableName(String oriTableName) {
-            this.oriTableName = oriTableName;
-        }
-
-        public DdlResult getRenameTableResult() {
-            return renameTableResult;
-        }
-
-        public void setRenameTableResult(DdlResult renameTableResult) {
-            this.renameTableResult = renameTableResult;
-        }
+        public String getSchemaName() { return schemaName; }
+        public void setSchemaName(String schemaName) { this.schemaName = schemaName; }
+        public String getTableName() { return tableName; }
+        public void setTableName(String tableName) { this.tableName = tableName; }
+        public EventType getType() { return type; }
+        public void setType(EventType type) { this.type = type; }
+        public String getOriSchemaName() { return oriSchemaName; }
+        public void setOriSchemaName(String oriSchemaName) { this.oriSchemaName = oriSchemaName; }
+        public String getOriTableName() { return oriTableName; }
+        public void setOriTableName(String oriTableName) { this.oriTableName = oriTableName; }
+        public DdlResult getRenameTableResult() { return renameTableResult; }
+        public void setRenameTableResult(DdlResult renameTableResult) { this.renameTableResult = renameTableResult; }
 
         @Override
         public String toString() {

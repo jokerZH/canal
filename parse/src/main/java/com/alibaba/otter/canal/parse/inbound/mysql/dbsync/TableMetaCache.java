@@ -17,14 +17,8 @@ import com.alibaba.otter.canal.parse.inbound.mysql.MysqlConnection;
 import com.google.common.base.Function;
 import com.google.common.collect.MigrateMap;
 
-/**
- * 处理table meta解析和缓存
- * 
- * @author jianghang 2013-1-17 下午10:15:16
- * @version 1.0.0
- */
+/* 处理table meta解析和缓存 */
 public class TableMetaCache {
-
     public static final String     COLUMN_NAME    = "COLUMN_NAME";
     public static final String     COLUMN_TYPE    = "COLUMN_TYPE";
     public static final String     IS_NULLABLE    = "IS_NULLABLE";
@@ -66,10 +60,7 @@ public class TableMetaCache {
         }
     }
 
-    public TableMeta getTableMeta(String schema, String table) {
-        return getTableMeta(schema, table, true);
-    }
-
+    public TableMeta getTableMeta(String schema, String table) { return getTableMeta(schema, table, true); }
     public TableMeta getTableMeta(String schema, String table, boolean useCache) {
         if (!useCache) {
             tableMetaCache.remove(getFullName(schema, table));
@@ -78,10 +69,7 @@ public class TableMetaCache {
         return tableMetaCache.get(getFullName(schema, table));
     }
 
-    public void clearTableMeta(String schema, String table) {
-        tableMetaCache.remove(getFullName(schema, table));
-    }
-
+    public void clearTableMeta(String schema, String table) { tableMetaCache.remove(getFullName(schema, table)); }
     public void clearTableMetaWithSchemaName(String schema) {
         // Set<String> removeNames = new HashSet<String>(); //
         // 存一份临时变量，避免在遍历的时候进行删除
@@ -97,15 +85,15 @@ public class TableMetaCache {
         // }
     }
 
-    public void clearTableMeta() {
-        tableMetaCache.clear();
-    }
+    public void clearTableMeta() { tableMetaCache.clear(); }
 
+    /* 获得单个表的描述信息 */
     private TableMeta getTableMeta0(String fullname) throws IOException {
         ResultSetPacket packet = connection.query("desc " + fullname);
         return new TableMeta(fullname, parserTableMeta(packet));
     }
 
+    /* 解析一个表的所有字段信息 */
     private List<FieldMeta> parserTableMeta(ResultSetPacket packet) {
         Map<String, Integer> nameMaps = new HashMap<String, Integer>(6, 1f);
 
