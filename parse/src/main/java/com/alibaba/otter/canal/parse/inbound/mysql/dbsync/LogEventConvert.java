@@ -313,10 +313,12 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         return createEntry(header, EntryType.TRANSACTIONEND, transactionEnd.toByteString());
     }
 
+    /* 解析insert update， delete */
     private Entry parseRowsEvent(RowsLogEvent event) {
         if (filterRows) {
             return null;
         }
+
         try {
             TableMapLogEvent table = event.getTable();
             if (table == null) {
@@ -350,16 +352,12 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                 throw new CanalParseException("unsupport event type :" + event.getHeader().getType());
             }
 
-            Header header = createHeader(binlogFileName,
-                event.getHeader(),
-                table.getDbName(),
-                table.getTableName(),
-                eventType);
+            Header header = createHeader(binlogFileName, event.getHeader(), table.getDbName(), table.getTableName(), eventType);
             RowChange.Builder rowChangeBuider = RowChange.newBuilder();
             rowChangeBuider.setTableId(event.getTableId());
             rowChangeBuider.setIsDdl(false);
-
             rowChangeBuider.setEventType(eventType);
+
             RowsLogBuffer buffer = event.getRowsBuf(charset.name());
             BitSet columns = event.getColumns();
             BitSet changeColumns = event.getChangeColumns();
@@ -412,8 +410,7 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         }
     }
 
-    private boolean parseOneRow(RowData.Builder rowDataBuilder, RowsLogEvent event, RowsLogBuffer buffer, BitSet cols,
-                                boolean isAfter, TableMeta tableMeta) throws UnsupportedEncodingException {
+    private boolean parseOneRow(RowData.Builder rowDataBuilder, RowsLogEvent event, RowsLogBuffer buffer, BitSet cols, boolean isAfter, TableMeta tableMeta) throws UnsupportedEncodingException {
         int columnCnt = event.getTable().getColumnCnt();
         ColumnInfo[] columnInfo = event.getTable().getColumnInfo();
 

@@ -1461,9 +1461,9 @@ public class LogBuffer {
      * @param len The length of MY_BITMAP in bits.
      */
     public final void fillBitmap(BitSet bitmap, final int len) {
-        if (position + ((len + 7) / 8) > origin + limit) throw new IllegalArgumentException("limit excceed: "
-                                                                                            + (position
-                                                                                               + ((len + 7) / 8) - origin));
+        if (position + ((len + 7) / 8) > origin + limit) {
+            throw new IllegalArgumentException("limit excceed: " + (position + ((len + 7) / 8) - origin));
+        }
 
         position = fillBitmap0(bitmap, position, len);
     }
