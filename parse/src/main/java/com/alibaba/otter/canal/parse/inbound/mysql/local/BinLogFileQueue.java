@@ -17,14 +17,8 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 
 import com.alibaba.otter.canal.parse.exception.CanalParseException;
 
-/**
- * 维护binlog文件列表
- * 
- * @author jianghang 2012-7-7 下午03:48:05
- * @version 1.0.0
- */
+/* 维护binlog文件列表, 如果没有下一个文件，则等待，应该是部署在mysql机器上才用到的 */
 public class BinLogFileQueue {
-
     private String        baseName       = "mysql-bin.";
     private List<File>    binlogs        = new ArrayList<File>();
     private File          directory;
@@ -33,10 +27,7 @@ public class BinLogFileQueue {
     private Timer         timer          = new Timer(true);
     private long          reloadInterval = 10 * 1000L;           // 10秒
 
-    public BinLogFileQueue(String directory){
-        this(new File(directory));
-    }
-
+    public BinLogFileQueue(String directory){ this(new File(directory)); }
     public BinLogFileQueue(File directory){
         this.directory = directory;
 
@@ -60,12 +51,7 @@ public class BinLogFileQueue {
         }, reloadInterval, reloadInterval);
     }
 
-    /**
-     * 根据前一个文件，获取符合条件的下一个binlog文件
-     * 
-     * @param pre
-     * @return
-     */
+    /* 根据前一个文件，获取符合条件的下一个binlog文件 */
     public File getNextFile(File pre) {
         try {
             lock.lockInterruptibly();
@@ -91,6 +77,7 @@ public class BinLogFileQueue {
         }
     }
 
+    /* 根据前一个文件，获取符合条件的前一个binlog文件 */
     public File getBefore(File file) {
         try {
             lock.lockInterruptibly();
@@ -116,13 +103,7 @@ public class BinLogFileQueue {
         }
     }
 
-    /**
-     * 根据前一个文件，获取符合条件的下一个binlog文件
-     * 
-     * @param pre
-     * @return
-     * @throws InterruptedException
-     */
+    /* 根据前一个文件，获取符合条件的下一个binlog文件 */
     public File waitForNextFile(File pre) throws InterruptedException {
         try {
             lock.lockInterruptibly();
@@ -146,9 +127,7 @@ public class BinLogFileQueue {
         }
     }
 
-    /**
-     * 获取当前所有binlog文件
-     */
+    /* 获取当前所有binlog文件 */
     public List<File> currentBinlogs() {
         return new ArrayList<File>(binlogs);
     }
@@ -167,13 +146,16 @@ public class BinLogFileQueue {
         }
     }
 
+    /**/
     private boolean offer(File file) {
         try {
             lock.lockInterruptibly();
             if (!binlogs.contains(file)) {
                 binlogs.add(file);
-                nextCondition.signalAll();// 唤醒
+                // 唤醒
+                nextCondition.signalAll();
                 return true;
+
             } else {
                 return false;
             }
@@ -185,6 +167,7 @@ public class BinLogFileQueue {
         }
     }
 
+    /* 获得目录下文件名是mysql-bin开头，数字结尾的文件 */
     private List<File> listBinlogFiles() {
         List<File> files = new ArrayList<File>();
         files.addAll(FileUtils.listFiles(directory, new IOFileFilter() {
@@ -222,8 +205,5 @@ public class BinLogFileQueue {
     }
 
     // ================== setter / getter ===================
-
-    public void setBaseName(String baseName) {
-        this.baseName = baseName;
-    }
+    public void setBaseName(String baseName) { this.baseName = baseName; }
 }

@@ -19,24 +19,17 @@ import com.taobao.tddl.dbsync.binlog.LogPosition;
 import com.taobao.tddl.dbsync.binlog.event.QueryLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.RotateLogEvent;
 
-/**
- * local bin log connection (not real connection)
- * 
- * @author yuanzu Date: 12-9-27 Time: 下午6:14
- */
+/* local bin log connection (not real connection) */
 public class LocalBinLogConnection implements ErosaConnection {
+    private static final Logger logger = LoggerFactory.getLogger(LocalBinLogConnection.class);
+    private BinLogFileQueue binlogs = null;
+    private boolean needWait;
+    private String directory;
+    private int bufferSize = 16 * 1024;
+    private boolean running = false;
 
-    private static final Logger logger     = LoggerFactory.getLogger(LocalBinLogConnection.class);
-    private BinLogFileQueue     binlogs    = null;
-    private boolean             needWait;
-    private String              directory;
-    private int                 bufferSize = 16 * 1024;
-    private boolean             running    = false;
-
-    public LocalBinLogConnection(){
-    }
-
-    public LocalBinLogConnection(String directory, boolean needWait){
+    public LocalBinLogConnection() { }
+    public LocalBinLogConnection(String directory, boolean needWait) {
         this.needWait = needWait;
         this.directory = directory;
     }
@@ -69,9 +62,7 @@ public class LocalBinLogConnection implements ErosaConnection {
         return running;
     }
 
-    public void seek(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException {
-    }
-
+    public void seek(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException { }
     public void dump(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException {
         File current = new File(directory, binlogfilename);
 
@@ -84,7 +75,8 @@ public class LocalBinLogConnection implements ErosaConnection {
             while (running) {
                 boolean needContinue = true;
                 LogEvent event = null;
-                L: while (fetcher.fetch()) {
+                L:
+                while (fetcher.fetch()) {
                     /*
                      * event = decoder.decode(fetcher, context); if (event ==
                      * null) { throw new CanalParseException("parse failed"); }
@@ -93,8 +85,7 @@ public class LocalBinLogConnection implements ErosaConnection {
 
                     do {
                         if (event == null) {
-                            event = new RotateLogEvent(context.getLogPosition().getFileName(), context.getLogPosition()
-                                .getPosition());
+                            event = new RotateLogEvent(context.getLogPosition().getFileName(), context.getLogPosition() .getPosition());
                         } else {
                             event = decoder.decode(fetcher, context);
                         }
@@ -161,7 +152,8 @@ public class LocalBinLogConnection implements ErosaConnection {
 
                 binlogFilename = lastXidLogFilename;
                 binlogFileOffset = lastXidLogFileOffset;
-                L: while (fetcher.fetch()) {
+                L:
+                while (fetcher.fetch()) {
                     LogEvent event;
                     do {
                         event = decoder.decode(fetcher, context);
@@ -220,28 +212,10 @@ public class LocalBinLogConnection implements ErosaConnection {
         return connection;
     }
 
-    public boolean isNeedWait() {
-        return needWait;
-    }
-
-    public void setNeedWait(boolean needWait) {
-        this.needWait = needWait;
-    }
-
-    public String getDirectory() {
-        return directory;
-    }
-
-    public void setDirectory(String directory) {
-        this.directory = directory;
-    }
-
-    public int getBufferSize() {
-        return bufferSize;
-    }
-
-    public void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
-
+    public boolean isNeedWait() { return needWait; }
+    public void setNeedWait(boolean needWait) { this.needWait = needWait; }
+    public String getDirectory() { return directory; }
+    public void setDirectory(String directory) { this.directory = directory; }
+    public int getBufferSize() { return bufferSize; }
+    public void setBufferSize(int bufferSize) { this.bufferSize = bufferSize; }
 }

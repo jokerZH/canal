@@ -11,31 +11,20 @@ import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.CanalEntry.EventType;
 import com.alibaba.otter.canal.store.CanalStoreException;
 
-/**
- * 缓冲event队列，提供按事务刷新数据的机制
- * 
- * @author jianghang 2012-12-6 上午11:05:12
- * @version 1.0.0
- */
+/* 缓冲event队列，提供按事务刷新数据的机制 */
 public class EventTransactionBuffer extends AbstractCanalLifeCycle {
+    private static final long INIT_SQEUENCE = -1;
+    private int bufferSize = 1024;
+    private int indexMask;
+    private CanalEntry.Entry[] entries;
 
-    private static final long        INIT_SQEUENCE = -1;
-    private int                      bufferSize    = 1024;
-    private int                      indexMask;
-    private CanalEntry.Entry[]       entries;
-
-    private AtomicLong               putSequence   = new AtomicLong(INIT_SQEUENCE); // 代表当前put操作最后一次写操作发生的位置
-    private AtomicLong               flushSequence = new AtomicLong(INIT_SQEUENCE); // 代表满足flush条件后最后一次数据flush的时间
+    private AtomicLong putSequence = new AtomicLong(INIT_SQEUENCE); // 代表当前put操作最后一次写操作发生的位置
+    private AtomicLong flushSequence = new AtomicLong(INIT_SQEUENCE); // 代表满足flush条件后最后一次数据flush的时间
 
     private TransactionFlushCallback flushCallback;
 
-    public EventTransactionBuffer(){
-
-    }
-
-    public EventTransactionBuffer(TransactionFlushCallback flushCallback){
-        this.flushCallback = flushCallback;
-    }
+    public EventTransactionBuffer() { }
+    public EventTransactionBuffer(TransactionFlushCallback flushCallback) { this.flushCallback = flushCallback; }
 
     public void start() throws CanalStoreException {
         super.start();
@@ -120,9 +109,7 @@ public class EventTransactionBuffer extends AbstractCanalLifeCycle {
         }
     }
 
-    /**
-     * 查询是否有空位
-     */
+    /* 查询是否有空位 */
     private boolean checkFreeSlotAt(final long sequence) {
         final long wrapPoint = sequence - bufferSize;
         if (wrapPoint > flushSequence.get()) { // 刚好追上一轮
@@ -132,33 +119,16 @@ public class EventTransactionBuffer extends AbstractCanalLifeCycle {
         }
     }
 
-    private int getIndex(long sequcnce) {
-        return (int) sequcnce & indexMask;
-    }
-
-    private boolean isDml(EventType eventType) {
-        return eventType == EventType.INSERT || eventType == EventType.UPDATE || eventType == EventType.DELETE;
-    }
+    private int getIndex(long sequcnce) { return (int) sequcnce & indexMask; }
+    private boolean isDml(EventType eventType) { return eventType == EventType.INSERT || eventType == EventType.UPDATE || eventType == EventType.DELETE; }
 
     // ================ setter / getter ==================
+    public void setBufferSize(int bufferSize) { this.bufferSize = bufferSize; }
+    public void setFlushCallback(TransactionFlushCallback flushCallback) { this.flushCallback = flushCallback; }
 
-    public void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
 
-    public void setFlushCallback(TransactionFlushCallback flushCallback) {
-        this.flushCallback = flushCallback;
-    }
-
-    /**
-     * 事务刷新机制
-     * 
-     * @author jianghang 2012-12-6 上午11:57:38
-     * @version 1.0.0
-     */
+    /* 事务刷新机制 */
     public static interface TransactionFlushCallback {
-
         public void flush(List<CanalEntry.Entry> transaction) throws InterruptedException;
     }
-
 }

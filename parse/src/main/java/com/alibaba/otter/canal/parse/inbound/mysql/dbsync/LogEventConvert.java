@@ -410,6 +410,7 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         }
     }
 
+    /* 解析一行数据 */
     private boolean parseOneRow(RowData.Builder rowDataBuilder, RowsLogEvent event, RowsLogBuffer buffer, BitSet cols, boolean isAfter, TableMeta tableMeta) throws UnsupportedEncodingException {
         int columnCnt = event.getTable().getColumnCnt();
         ColumnInfo[] columnInfo = event.getTable().getColumnInfo();
@@ -440,8 +441,7 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                 if (tableMeta == null) {
                     tableError = true;
                     if (!filterTableError) {
-                        throw new CanalParseException("not found [" + event.getTable().getDbName() + "."
-                                                      + event.getTable().getTableName() + "] in db , pls check!");
+                        throw new CanalParseException("not found [" + event.getTable().getDbName() + "." + event.getTable().getTableName() + "] in db , pls check!");
                     }
                 }
 
@@ -449,13 +449,11 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                 if (tableMeta != null && columnInfo.length > tableMeta.getFileds().size()) {
                     tableError = true;
                     if (!filterTableError) {
-                        throw new CanalParseException("column size is not match for table:" + tableMeta.getFullName()
-                                                      + "," + columnInfo.length + " vs " + tableMeta.getFileds().size());
+                        throw new CanalParseException("column size is not match for table:" + tableMeta.getFullName() + "," + columnInfo.length + " vs " + tableMeta.getFileds().size());
                     }
                 }
             } else {
-                logger.warn("[" + event.getTable().getDbName() + "." + event.getTable().getTableName()
-                            + "] is no primary key , skip alibaba_rds_row_id column");
+                logger.warn("[" + event.getTable().getDbName() + "." + event.getTable().getTableName() + "] is no primary key , skip alibaba_rds_row_id column");
             }
         }
 
@@ -603,10 +601,8 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
 
             columnBuilder.setSqlType(javaType);
             // 设置是否update的标记位
-            columnBuilder.setUpdated(isAfter
-                                     && isUpdate(rowDataBuilder.getBeforeColumnsList(),
-                                         columnBuilder.getIsNull() ? null : columnBuilder.getValue(),
-                                         i));
+            columnBuilder.setUpdated(isAfter && isUpdate(rowDataBuilder.getBeforeColumnsList(), columnBuilder.getIsNull() ? null : columnBuilder.getValue(), i));
+
             if (isAfter) {
                 rowDataBuilder.addAfterColumns(columnBuilder.build());
             } else {
@@ -615,7 +611,6 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         }
 
         return tableError;
-
     }
 
     private Entry buildQueryEntry(String queryString, LogHeader logHeader) {

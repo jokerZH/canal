@@ -12,18 +12,17 @@ import com.alibaba.otter.canal.parse.inbound.BinlogParser;
 import com.alibaba.otter.canal.parse.inbound.mysql.dbsync.LogEventConvert;
 
 public abstract class AbstractMysqlEventParser extends AbstractEventParser {
-
-    protected final Logger      logger                  = LoggerFactory.getLogger(this.getClass());
-    protected static final long BINLOG_START_OFFEST     = 4L;
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected static final long BINLOG_START_OFFEST = 4L;
 
     // 编码信息
-    protected byte              connectionCharsetNumber = (byte) 33;
-    protected Charset           connectionCharset       = Charset.forName("UTF-8");
-    protected boolean           filterQueryDcl          = false;
-    protected boolean           filterQueryDml          = false;
-    protected boolean           filterQueryDdl          = false;
-    protected boolean           filterRows              = false;
-    protected boolean           filterTableError        = false;
+    protected byte connectionCharsetNumber = (byte) 33;
+    protected Charset connectionCharset = Charset.forName("UTF-8");
+    protected boolean filterQueryDcl = false;
+    protected boolean filterQueryDml = false;
+    protected boolean filterQueryDdl = false;
+    protected boolean filterRows = false;
+    protected boolean filterTableError = false;
 
     protected BinlogParser buildParser() {
         LogEventConvert convert = new LogEventConvert();
@@ -57,44 +56,20 @@ public abstract class AbstractMysqlEventParser extends AbstractEventParser {
         super.setEventBlackFilter(eventBlackFilter);
 
         // 触发一下filter变更
-        if (eventBlackFilter != null && eventBlackFilter instanceof AviaterRegexFilter
-            && binlogParser instanceof LogEventConvert) {
+        if (eventBlackFilter != null && eventBlackFilter instanceof AviaterRegexFilter && binlogParser instanceof LogEventConvert) {
             ((LogEventConvert) binlogParser).setNameBlackFilter((AviaterRegexFilter) eventBlackFilter);
         }
     }
 
     // ============================ setter / getter =========================
 
-    public void setConnectionCharsetNumber(byte connectionCharsetNumber) {
-        this.connectionCharsetNumber = connectionCharsetNumber;
-    }
-
-    public void setConnectionCharset(Charset connectionCharset) {
-        this.connectionCharset = connectionCharset;
-    }
-
-    public void setConnectionCharset(String connectionCharset) {
-        this.connectionCharset = Charset.forName(connectionCharset);
-    }
-
-    public void setFilterQueryDcl(boolean filterQueryDcl) {
-        this.filterQueryDcl = filterQueryDcl;
-    }
-
-    public void setFilterQueryDml(boolean filterQueryDml) {
-        this.filterQueryDml = filterQueryDml;
-    }
-
-    public void setFilterQueryDdl(boolean filterQueryDdl) {
-        this.filterQueryDdl = filterQueryDdl;
-    }
-
-    public void setFilterRows(boolean filterRows) {
-        this.filterRows = filterRows;
-    }
-
-    public void setFilterTableError(boolean filterTableError) {
-        this.filterTableError = filterTableError;
-    }
+    public void setConnectionCharsetNumber(byte connectionCharsetNumber) { this.connectionCharsetNumber = connectionCharsetNumber; }
+    public void setConnectionCharset(Charset connectionCharset) { this.connectionCharset = connectionCharset; }
+    public void setConnectionCharset(String connectionCharset) { this.connectionCharset = Charset.forName(connectionCharset); }
+    public void setFilterQueryDcl(boolean filterQueryDcl) { this.filterQueryDcl = filterQueryDcl; }
+    public void setFilterQueryDml(boolean filterQueryDml) { this.filterQueryDml = filterQueryDml; }
+    public void setFilterQueryDdl(boolean filterQueryDdl) { this.filterQueryDdl = filterQueryDdl; }
+    public void setFilterRows(boolean filterRows) { this.filterRows = filterRows; }
+    public void setFilterTableError(boolean filterTableError) { this.filterTableError = filterTableError; }
 
 }

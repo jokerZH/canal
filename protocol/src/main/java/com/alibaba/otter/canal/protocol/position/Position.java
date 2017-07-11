@@ -10,8 +10,5 @@ import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 public abstract class Position implements Serializable {
     private static final long serialVersionUID = 2332798099928474975L;
 
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, CanalToStringStyle.DEFAULT_STYLE);
-    }
-
+    public String toString() { return ToStringBuilder.reflectionToString(this, CanalToStringStyle.DEFAULT_STYLE); }
 }

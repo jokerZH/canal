@@ -12,13 +12,10 @@ import java.nio.channels.FileChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author jianghang 2012-7-7 下午03:10:47
- * @version 1.0.0
- */
+/* TODO */
 public class BufferedFileDataInput {
-
     private static final Logger logger = LoggerFactory.getLogger(BufferedFileDataInput.class);
+
     // Read parameters.
     private File                file;
     private int                 size;

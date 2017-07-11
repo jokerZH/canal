@@ -40,30 +40,16 @@ public class MysqlConnection implements ErosaConnection {
 
     public MysqlConnection(){ }
     public MysqlConnection(InetSocketAddress address, String username, String password){
-
         connector = new MysqlConnector(address, username, password);
     }
-
-    public MysqlConnection(InetSocketAddress address, String username, String password, byte charsetNumber,
-                           String defaultSchema){
+    public MysqlConnection(InetSocketAddress address, String username, String password, byte charsetNumber, String defaultSchema){
         connector = new MysqlConnector(address, username, password, charsetNumber, defaultSchema);
     }
 
-    public void connect() throws IOException {
-        connector.connect();
-    }
-
-    public void reconnect() throws IOException {
-        connector.reconnect();
-    }
-
-    public void disconnect() throws IOException {
-        connector.disconnect();
-    }
-
-    public boolean isConnected() {
-        return connector.isConnected();
-    }
+    public void connect() throws IOException { connector.connect(); }
+    public void reconnect() throws IOException { connector.reconnect(); }
+    public void disconnect() throws IOException { connector.disconnect(); }
+    public boolean isConnected() { return connector.isConnected(); }
 
     public ResultSetPacket query(String cmd) throws IOException {
         MysqlQueryExecutor exector = new MysqlQueryExecutor(connector);
@@ -75,9 +61,7 @@ public class MysqlConnection implements ErosaConnection {
         exector.update(cmd);
     }
 
-    /**
-     * 加速主备切换时的查找速度，做一些特殊优化，比如只解析事务头或者尾
-     */
+    /* 加速主备切换时的查找速度，做一些特殊优化，比如只解析事务头或者尾 */
     public void seek(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException {
         updateSettings();
         loadBinlogChecksum();
@@ -134,6 +118,7 @@ public class MysqlConnection implements ErosaConnection {
         throw new NullPointerException("Not implement yet");
     }
 
+    /* 发送dump请求 */
     private void sendBinlogDump(String binlogfilename, Long binlogPosition) throws IOException {
         BinlogDumpCommandPacket binlogDumpCmd = new BinlogDumpCommandPacket();
         binlogDumpCmd.binlogFileName = binlogfilename;
@@ -162,15 +147,10 @@ public class MysqlConnection implements ErosaConnection {
     // ====================== help method ====================
 
     /**
-     * the settings that will need to be checked or set:<br>
-     * <ol>
-     * <li>wait_timeout</li>
-     * <li>net_write_timeout</li>
-     * <li>net_read_timeout</li>
-     * </ol>
-     * 
-     * @param channel
-     * @throws IOException
+     * the settings that will need to be checked or set:
+     *      wait_timeout
+     *      net_write_timeout
+     *      net_read_timeout
      */
     private void updateSettings() throws IOException {
         try {
@@ -199,8 +179,7 @@ public class MysqlConnection implements ErosaConnection {
 
         try {
             // mysql5.6针对checksum支持需要设置session变量
-            // 如果不设置会出现错误： Slave can not handle replication events with the
-            // checksum that master is configured to log
+            // 如果不设置会出现错误： Slave can not handle replication events with the checksum that master is configured to log
             // 但也不能乱设置，需要和mysql server的checksum配置一致，不然RotateLogEvent会出现乱码
             // '@@global.binlog_checksum'需要去掉单引号,在mysql 5.6.29下导致master退出
             update("set @master_binlog_checksum= @@global.binlog_checksum");
@@ -228,9 +207,7 @@ public class MysqlConnection implements ErosaConnection {
         }
     }
 
-    /**
-     * 获取一下binlog format格式
-     */
+    /* 获取一下binlog format格式 */
     private void loadBinlogFormat() {
         ResultSetPacket rs = null;
         try {
@@ -251,9 +228,7 @@ public class MysqlConnection implements ErosaConnection {
         }
     }
 
-    /**
-     * 获取一下binlog image格式
-     */
+    /* 获取一下binlog image格式 */
     private void loadBinlogImage() {
         ResultSetPacket rs = null;
         try {
@@ -277,8 +252,7 @@ public class MysqlConnection implements ErosaConnection {
 
     /**
      * 获取主库checksum信息
-     * https://dev.mysql.com/doc/refman/5.6/en/replication-options
-     * -binary-log.html#option_mysqld_binlog-checksum
+     * https://dev.mysql.com/doc/refman/5.6/en/replication-options-binary-log.html#option_mysqld_binlog-checksum
      */
     private void loadBinlogChecksum() {
         ResultSetPacket rs = null;
@@ -289,8 +263,7 @@ public class MysqlConnection implements ErosaConnection {
         }
 
         List<String> columnValues = rs.getFieldValues();
-        if (columnValues != null && columnValues.size() >= 1 && columnValues.get(0) != null
-            && columnValues.get(0).toUpperCase().equals("CRC32")) {
+        if (columnValues != null && columnValues.size() >= 1 && columnValues.get(0) != null && columnValues.get(0).toUpperCase().equals("CRC32")) {
             binlogChecksum = LogEvent.BINLOG_CHECKSUM_ALG_CRC32;
         } else {
             binlogChecksum = LogEvent.BINLOG_CHECKSUM_ALG_OFF;
