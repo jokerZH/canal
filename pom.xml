@@ -114,12 +114,16 @@
     <modules>
         <module>common</module>
         <module>meta</module>
+        <!-- 拉取binlog数据，初步解析binlog数据包 -->
         <module>dbsync</module>
         <module>filter</module>
+        <!-- 实现mysql客户端，基于服务端客户端协议向mysql发送请求 -->
         <module>driver</module>
+        <!-- 负责将binlog拉取，解析，然后调用用户的sink函数，主从切换和mysql的心跳，应该是负责mysql端的所有操作 -->
         <module>parse</module>
         <module>sink</module>
         <module>store</module>
+        <!-- canal自己对binlog数据的结构化数据 -->
         <module>protocol</module>
         <module>instance</module>
         <module>server</module>
