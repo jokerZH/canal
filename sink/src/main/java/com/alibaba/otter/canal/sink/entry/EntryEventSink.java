@@ -22,27 +22,20 @@ import com.alibaba.otter.canal.sink.exception.CanalSinkException;
 import com.alibaba.otter.canal.store.CanalEventStore;
 import com.alibaba.otter.canal.store.model.Event;
 
-/**
- * mysql binlog数据对象输出
- * 
- * @author jianghang 2012-7-4 下午03:23:16
- * @version 1.0.0
- */
+/* mysql binlog数据对象输出 */
 public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry>> implements CanalEventSink<List<CanalEntry.Entry>> {
+    private static final Logger logger = LoggerFactory.getLogger(EntryEventSink.class);
 
-    private static final Logger    logger                        = LoggerFactory.getLogger(EntryEventSink.class);
-    private static final int       maxFullTimes                  = 10;
-    private CanalEventStore<Event> eventStore;
-    protected boolean              filterTransactionEntry        = false;                                        // 是否需要过滤事务头/尾
-    protected boolean              filterEmtryTransactionEntry   = true;                                         // 是否需要过滤空的事务头/尾
-    protected long                 emptyTransactionInterval      = 5 * 1000;                                     // 空的事务输出的频率
-    protected long                 emptyTransctionThresold       = 8192;                                         // 超过1024个事务头，输出一个
-    protected volatile long        lastEmptyTransactionTimestamp = 0L;
-    protected AtomicLong           lastEmptyTransactionCount     = new AtomicLong(0L);
+    private static final int maxFullTimes = 10;                                         // TODO
+    private CanalEventStore<Event> eventStore;                                          // 用户存放经过过滤得到的消息
+    protected boolean filterTransactionEntry = false;                                   // 是否需要过滤事务头/尾
+    protected boolean filterEmtryTransactionEntry = true;                               // 是否需要过滤空的事务头/尾
+    protected long emptyTransactionInterval = 5 * 1000;                                 // 空的事务输出的频率
+    protected long emptyTransctionThresold = 8192;                                      // 超过1024个事务头，输出一个
+    protected volatile long lastEmptyTransactionTimestamp = 0L;                         // TODO
+    protected AtomicLong lastEmptyTransactionCount = new AtomicLong(0L);      // TODO
 
-    public EntryEventSink(){
-        addHandler(new HeartBeatEntryEventHandler());
-    }
+    public EntryEventSink() { addHandler(new HeartBeatEntryEventHandler()); }
 
     public void start() {
         super.start();
@@ -65,15 +58,14 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
         }
     }
 
+    /* TODO */
     public boolean filter(List<Entry> event, InetSocketAddress remoteAddress, String destination) {
-
         return false;
     }
 
-    public boolean sink(List<CanalEntry.Entry> entrys, InetSocketAddress remoteAddress, String destination)
-                                                                                                           throws CanalSinkException,
-                                                                                                           InterruptedException {
+    public boolean sink(List<CanalEntry.Entry> entrys, InetSocketAddress remoteAddress, String destination) throws CanalSinkException, InterruptedException {
         List rowDatas = entrys;
+
         if (filterTransactionEntry) {
             rowDatas = new ArrayList<CanalEntry.Entry>();
             for (CanalEntry.Entry entry : entrys) {
@@ -86,8 +78,7 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
         return sinkData(rowDatas, remoteAddress);
     }
 
-    private boolean sinkData(List<CanalEntry.Entry> entrys, InetSocketAddress remoteAddress)
-                                                                                            throws InterruptedException {
+    private boolean sinkData(List<CanalEntry.Entry> entrys, InetSocketAddress remoteAddress) throws InterruptedException {
         boolean hasRowData = false;
         boolean hasHeartBeat = false;
         List<Event> events = new ArrayList<Event>();
@@ -114,7 +105,7 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
                 long currentTimestamp = events.get(0).getEntry().getHeader().getExecuteTime();
                 // 基于一定的策略控制，放过空的事务头和尾，便于及时更新数据库位点，表明工作正常
                 if (Math.abs(currentTimestamp - lastEmptyTransactionTimestamp) > emptyTransactionInterval
-                    || lastEmptyTransactionCount.incrementAndGet() > emptyTransctionThresold) {
+                        || lastEmptyTransactionCount.incrementAndGet() > emptyTransctionThresold) {
                     lastEmptyTransactionCount.set(0L);
                     lastEmptyTransactionTimestamp = currentTimestamp;
                     return doSink(events);
@@ -126,23 +117,21 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
         }
     }
 
+    // 执行过滤流程,按照dbName.tableName过滤
     protected boolean doFilter(Event event) {
         if (filter != null && event.getEntry().getEntryType() == EntryType.ROWDATA) {
             String name = getSchemaNameAndTableName(event.getEntry());
             boolean need = filter.filter(name);
             if (!need) {
-                logger.debug("filter name[{}] entry : {}:{}",
-                    name,
-                    event.getEntry().getHeader().getLogfileName(),
-                    event.getEntry().getHeader().getLogfileOffset());
+                logger.debug("filter name[{}] entry : {}:{}", name, event.getEntry().getHeader().getLogfileName(), event.getEntry().getHeader().getLogfileOffset());
             }
-
             return need;
         } else {
             return true;
         }
     }
 
+    // 具体处理binlog消息
     protected boolean doSink(List<Event> events) {
         for (CanalEventDownStreamHandler<List<Event>> handler : getHandlers()) {
             events = handler.before(events);
@@ -178,28 +167,10 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
 
     }
 
-    private String getSchemaNameAndTableName(CanalEntry.Entry entry) {
-        return entry.getHeader().getSchemaName() + "." + entry.getHeader().getTableName();
-    }
-
-    public void setEventStore(CanalEventStore<Event> eventStore) {
-        this.eventStore = eventStore;
-    }
-
-    public void setFilterTransactionEntry(boolean filterTransactionEntry) {
-        this.filterTransactionEntry = filterTransactionEntry;
-    }
-
-    public void setFilterEmtryTransactionEntry(boolean filterEmtryTransactionEntry) {
-        this.filterEmtryTransactionEntry = filterEmtryTransactionEntry;
-    }
-
-    public void setEmptyTransactionInterval(long emptyTransactionInterval) {
-        this.emptyTransactionInterval = emptyTransactionInterval;
-    }
-
-    public void setEmptyTransctionThresold(long emptyTransctionThresold) {
-        this.emptyTransctionThresold = emptyTransctionThresold;
-    }
-
+    private String getSchemaNameAndTableName(CanalEntry.Entry entry) { return entry.getHeader().getSchemaName() + "." + entry.getHeader().getTableName(); }
+    public void setEventStore(CanalEventStore<Event> eventStore) { this.eventStore = eventStore; }
+    public void setFilterTransactionEntry(boolean filterTransactionEntry) { this.filterTransactionEntry = filterTransactionEntry; }
+    public void setFilterEmtryTransactionEntry(boolean filterEmtryTransactionEntry) { this.filterEmtryTransactionEntry = filterEmtryTransactionEntry; }
+    public void setEmptyTransactionInterval(long emptyTransactionInterval) { this.emptyTransactionInterval = emptyTransactionInterval; }
+    public void setEmptyTransctionThresold(long emptyTransctionThresold) { this.emptyTransctionThresold = emptyTransctionThresold; }
 }

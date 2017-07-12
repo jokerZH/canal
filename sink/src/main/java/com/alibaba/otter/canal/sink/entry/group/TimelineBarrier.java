@@ -12,7 +12,6 @@ import com.alibaba.otter.canal.store.model.Event;
 /**
  * 时间归并控制
  * 
- * <pre>
  * 大致设计：
  *  1. 多个队列都提交一个timestamp，判断出最小的一个timestamp做为通过的条件，然后唤醒<=该最小时间的线程通过
  *  2. 只有当多个队列都提交了一个timestamp，缺少任何一个提交，都会阻塞其他队列通过。(解决当一个库启动过慢或者发生主备切换时出现延迟等问题)
@@ -21,10 +20,6 @@ import com.alibaba.otter.canal.store.model.Event;
  * a. 大事务时，事务头的时间会晚于事务当中数据的时间，相当于出现一个时间回退
  * b. 出现主备切换，从备机上发过来的数据会回退几秒钟
  * 
- * </pre>
- * 
- * @author jianghang 2012-10-15 下午10:01:53
- * @version 1.0.0
  */
 public class TimelineBarrier implements GroupBarrier<Event> {
 

@@ -7,12 +7,7 @@ import com.alibaba.otter.canal.protocol.CanalEntry.EntryType;
 import com.alibaba.otter.canal.sink.AbstractCanalEventDownStreamHandler;
 import com.alibaba.otter.canal.store.model.Event;
 
-/**
- * 处理一下一下heartbeat数据
- * 
- * @author jianghang 2013-10-8 下午6:03:53
- * @since 1.0.12
- */
+/* 处理heartbeat数据, 摘除HEARTBEAT消息 */
 public class HeartBeatEntryEventHandler extends AbstractCanalEventDownStreamHandler<List<Event>> {
 
     public List<Event> before(List<Event> events) {
@@ -37,5 +32,4 @@ public class HeartBeatEntryEventHandler extends AbstractCanalEventDownStreamHand
             return result;
         }
     }
-
 }
