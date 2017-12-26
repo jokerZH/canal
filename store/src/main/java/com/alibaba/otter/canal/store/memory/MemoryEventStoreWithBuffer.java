@@ -29,12 +29,8 @@ import com.alibaba.otter.canal.store.model.Events;
  * 1. 新增BatchMode类型，支持按内存大小获取批次数据，内存大小更加可控.
  *   a. put操作，会首先根据bufferSize进行控制，然后再进行bufferSize * bufferMemUnit进行控制. 因存储的内容是以Event，如果纯依赖于memsize进行控制，会导致RingBuffer出现动态伸缩
  * </pre>
- * 
- * @author jianghang 2012-6-20 上午09:46:31
- * @version 1.0.0
  */
 public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge implements CanalEventStore<Event>, CanalStoreScavenge {
-
     private static final long INIT_SQEUENCE = -1;
     private int               bufferSize    = 16 * 1024;
     private int               bufferMemUnit = 1024;                         // memsize的单位，默认为1kb大小
@@ -59,13 +55,8 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
     private BatchMode         batchMode     = BatchMode.ITEMSIZE;           // 默认为内存大小模式
     private boolean           ddlIsolation  = false;
 
-    public MemoryEventStoreWithBuffer(){
-
-    }
-
-    public MemoryEventStoreWithBuffer(BatchMode batchMode){
-        this.batchMode = batchMode;
-    }
+    public MemoryEventStoreWithBuffer(){ }
+    public MemoryEventStoreWithBuffer(BatchMode batchMode){ this.batchMode = batchMode; }
 
     public void start() throws CanalStoreException {
         super.start();
@@ -169,9 +160,7 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
         return tryPut(Arrays.asList(data));
     }
 
-    /**
-     * 执行具体的put操作
-     */
+    /* 执行具体的put操作 */
     private void doPut(List<Event> data) {
         long current = putSequence.get();
         long end = current + data.size();
@@ -254,6 +243,7 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
         }
     }
 
+    //获得
     private Events<Event> doGet(Position start, int batchSize) throws CanalStoreException {
         LogPosition startPosition = (LogPosition) start;
 
@@ -313,7 +303,6 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
                     end = next;// 记录end位点
                 }
             }
-
         }
 
         PositionRange<LogPosition> range = new PositionRange<LogPosition>();
@@ -343,6 +332,7 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
         }
     }
 
+    // 获得ack之后最早的数据
     public LogPosition getFirstPosition() throws CanalStoreException {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -399,6 +389,7 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
         cleanUntil(position);
     }
 
+    // 清理position之前的数据，报错本省
     public void cleanUntil(Position position) throws CanalStoreException {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -500,9 +491,7 @@ public class MemoryEventStoreWithBuffer extends AbstractCanalStoreScavenge imple
         }
     }
 
-    /**
-     * 检查是否存在需要get的数据,并且数量>=batchSize
-     */
+    /* 检查是否存在需要get的数据,并且数量>=batchSize */
     private boolean checkUnGetSlotAt(LogPosition startPosition, int batchSize) {
         if (batchMode.isItemSize()) {
             long current = getSequence.get();

@@ -53,7 +53,6 @@ import com.alibaba.otter.canal.store.model.BatchMode;
  * @version 1.0.0
  */
 public class CanalInstanceWithManager extends AbstractCanalInstance {
-
     private static final Logger logger = LoggerFactory.getLogger(CanalInstanceWithManager.class);
     protected String            filter;                                                          // 过滤表达式
     protected CanalParameter    parameters;                                                      // 对应参数
@@ -191,9 +190,7 @@ public class CanalInstanceWithManager extends AbstractCanalInstance {
                 SourcingType lastType = null;
                 for (List<DataSourcing> groupDbAddress : groupDbAddresses) {
                     if (lastType != null && !lastType.equals(groupDbAddress.get(i).getType())) {
-                        throw new CanalException(String.format("master/slave Sourcing type is unmatch. %s vs %s",
-                            lastType,
-                            groupDbAddress.get(i).getType()));
+                        throw new CanalException(String.format("master/slave Sourcing type is unmatch. %s vs %s", lastType, groupDbAddress.get(i).getType()));
                     }
 
                     lastType = groupDbAddress.get(i).getType();
@@ -219,6 +216,7 @@ public class CanalInstanceWithManager extends AbstractCanalInstance {
         logger.info("init eventParser end! \n\t load CanalEventParser:{}", eventParser.getClass().getName());
     }
 
+    // 初始化binlog拉取结构
     private CanalEventParser doInitEventParser(SourcingType type, List<InetSocketAddress> dbAddresses) {
         CanalEventParser eventParser;
         if (type.isMysql()) {
@@ -252,14 +250,12 @@ public class CanalInstanceWithManager extends AbstractCanalInstance {
             }
 
             if (!CollectionUtils.isEmpty(parameters.getPositions())) {
-                EntryPosition masterPosition = JsonUtils.unmarshalFromString(parameters.getPositions().get(0),
-                    EntryPosition.class);
+                EntryPosition masterPosition = JsonUtils.unmarshalFromString(parameters.getPositions().get(0), EntryPosition.class);
                 // binlog位置参数
                 mysqlEventParser.setMasterPosition(masterPosition);
 
                 if (parameters.getPositions().size() > 1) {
-                    EntryPosition standbyPosition = JsonUtils.unmarshalFromString(parameters.getPositions().get(0),
-                        EntryPosition.class);
+                    EntryPosition standbyPosition = JsonUtils.unmarshalFromString(parameters.getPositions().get(0), EntryPosition.class);
                     mysqlEventParser.setStandbyPosition(standbyPosition);
                 }
             }

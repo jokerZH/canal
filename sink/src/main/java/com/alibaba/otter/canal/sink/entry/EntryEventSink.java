@@ -36,7 +36,6 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
     protected AtomicLong lastEmptyTransactionCount = new AtomicLong(0L);      // TODO
 
     public EntryEventSink() { addHandler(new HeartBeatEntryEventHandler()); }
-
     public void start() {
         super.start();
         Assert.notNull(eventStore);
@@ -78,6 +77,7 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
         return sinkData(rowDatas, remoteAddress);
     }
 
+    // 处理
     private boolean sinkData(List<CanalEntry.Entry> entrys, InetSocketAddress remoteAddress) throws InterruptedException {
         boolean hasRowData = false;
         boolean hasHeartBeat = false;
@@ -100,12 +100,11 @@ public class EntryEventSink extends AbstractCanalEventSink<List<CanalEntry.Entry
             // 存在heartbeat记录，直接跳给后续处理
             return doSink(events);
         } else {
-            // 需要过滤的数据
+            // 需要过滤的数据, 处理空事务
             if (filterEmtryTransactionEntry && !CollectionUtils.isEmpty(events)) {
                 long currentTimestamp = events.get(0).getEntry().getHeader().getExecuteTime();
                 // 基于一定的策略控制，放过空的事务头和尾，便于及时更新数据库位点，表明工作正常
-                if (Math.abs(currentTimestamp - lastEmptyTransactionTimestamp) > emptyTransactionInterval
-                        || lastEmptyTransactionCount.incrementAndGet() > emptyTransctionThresold) {
+                if (Math.abs(currentTimestamp - lastEmptyTransactionTimestamp) > emptyTransactionInterval || lastEmptyTransactionCount.incrementAndGet() > emptyTransctionThresold) {
                     lastEmptyTransactionCount.set(0L);
                     lastEmptyTransactionTimestamp = currentTimestamp;
                     return doSink(events);

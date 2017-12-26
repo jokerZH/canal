@@ -19,7 +19,7 @@ import com.taobao.tddl.dbsync.binlog.LogPosition;
 import com.taobao.tddl.dbsync.binlog.event.QueryLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.RotateLogEvent;
 
-/* local bin log connection (not real connection) */
+/* 解析本地binlog文件，伪装成connection */
 public class LocalBinLogConnection implements ErosaConnection {
     private static final Logger logger = LoggerFactory.getLogger(LocalBinLogConnection.class);
     private BinLogFileQueue binlogs = null;
@@ -58,10 +58,7 @@ public class LocalBinLogConnection implements ErosaConnection {
         this.running = false;
     }
 
-    public boolean isConnected() {
-        return running;
-    }
-
+    public boolean isConnected() { return running; }
     public void seek(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException { }
     public void dump(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException {
         File current = new File(directory, binlogfilename);
@@ -128,6 +125,7 @@ public class LocalBinLogConnection implements ErosaConnection {
         }
     }
 
+    // 循环遍历各个文件，从最新的开始读取
     public void dump(long timestampMills, SinkFunction func) throws IOException {
         List<File> currentBinlogs = binlogs.currentBinlogs();
         File current = currentBinlogs.get(currentBinlogs.size() - 1);

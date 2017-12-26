@@ -10,12 +10,8 @@ import com.alibaba.otter.canal.common.zookeeper.ZkClientx;
 import com.alibaba.otter.canal.parse.exception.CanalParseException;
 import com.alibaba.otter.canal.protocol.position.LogPosition;
 
-/**
- * Created by yinxiu on 17/3/17. Email: marklin.hz@gmail.com Memory first.
- * Asynchronous commit position info to ZK.
- */
+/* 定时刷新zk */
 public class MixedLogPositionManager extends AbstractLogPositionManager {
-
     private final Logger                      logger = LoggerFactory.getLogger(MixedLogPositionManager.class);
 
     private final MemoryLogPositionManager    memoryLogPositionManager;

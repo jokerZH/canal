@@ -7,6 +7,5 @@ package com.alibaba.otter.canal.store;
  * @since 1.0.0
  */
 public interface CanalGroupEventStore<T> extends CanalEventStore<T> {
-
     void addStoreInfo(StoreInfo info);
 }

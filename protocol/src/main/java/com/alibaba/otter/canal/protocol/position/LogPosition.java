@@ -3,8 +3,8 @@ package com.alibaba.otter.canal.protocol.position;
 /* 基于mysql/oracle log位置标示 */
 public class LogPosition extends Position {
     private static final long serialVersionUID = 3875012010277005819L;
-    private LogIdentity       identity;
-    private EntryPosition     postion;
+    private LogIdentity       identity;     // slave id
+    private EntryPosition     postion;      // 文件名 偏移
 
     public LogIdentity getIdentity() { return identity; }
     public void setIdentity(LogIdentity identity) { this.identity = identity; }

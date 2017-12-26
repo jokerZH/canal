@@ -23,17 +23,17 @@ import com.alibaba.otter.canal.common.zookeeper.ZkClientx;
 import com.alibaba.otter.canal.common.zookeeper.ZookeeperPathUtils;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 
-/* clinet running控制, 多个任务同时启动的时候 保证只有一个任务启动 */
+/* cleint running控制, 多个任务同时启动的时候 保证只有一个任务启动, 且保证一定有一个任务的执行 */
 public class ClientRunningMonitor extends AbstractCanalLifeCycle {
     private static final Logger logger = LoggerFactory.getLogger(ClientRunningMonitor.class);
 
     private ZkClientx zkClient;
-    private String destination;
-    private ClientRunningData clientData;
-    private IZkDataListener dataListener;
+    private IZkDataListener dataListener;       // 监控client在zk上的状态节点
+    private String destination;                 // 需要拉取数据的db
+    private ClientRunningData clientData;       // TODO
     private BooleanMutex mutex = new BooleanMutex(false);
     private volatile boolean release = false;
-    private volatile ClientRunningData activeData;
+    private volatile ClientRunningData activeData;  // 最新的当前client状态主句
     private ScheduledExecutorService delayExector = Executors.newScheduledThreadPool(1);
     private ClientRunningListener listener;
     private int delayTime = 5;
@@ -143,9 +143,7 @@ public class ClientRunningMonitor extends AbstractCanalLifeCycle {
         mutex.get();
     }
 
-    /**
-     * 检查当前的状态
-     */
+    /* 检查当前的状态 TODO 谁的状态 */
     public boolean check() {
         String path = ZookeeperPathUtils.getDestinationClientRunning(this.destination, clientData.getClientId());
         try {
@@ -155,9 +153,7 @@ public class ClientRunningMonitor extends AbstractCanalLifeCycle {
             // 检查下nid是否为自己
             boolean result = isMine(activeData.getAddress());
             if (!result) {
-                logger.warn("canal is running in [{}] , but not in [{}]",
-                        activeData.getAddress(),
-                        clientData.getAddress());
+                logger.warn("canal is running in [{}] , but not in [{}]", activeData.getAddress(), clientData.getAddress());
             }
             return result;
         } catch (ZkNoNodeException e) {
@@ -173,6 +169,7 @@ public class ClientRunningMonitor extends AbstractCanalLifeCycle {
         }
     }
 
+    // 退出
     public boolean releaseRunning() {
         if (check()) {
             String path = ZookeeperPathUtils.getDestinationClientRunning(this.destination, clientData.getClientId());

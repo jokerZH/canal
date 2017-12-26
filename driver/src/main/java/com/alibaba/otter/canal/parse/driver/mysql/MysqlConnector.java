@@ -34,7 +34,7 @@ public class MysqlConnector {
     private int sendBufferSize = 16 * 1024;
 
     private SocketChannel channel;
-    private volatile boolean dumping = false;
+    private volatile boolean dumping = false;   // 是否已经发送dump请求
     private long connectionId = -1;     // mysql connectinnId
     private AtomicBoolean connected = new AtomicBoolean(false);
 

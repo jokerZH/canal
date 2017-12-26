@@ -10,14 +10,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 
-/**
- * canal运行相关参数
- * 
- * @author jianghang 2012-7-4 下午02:52:52
- * @version 1.0.0
- */
+/* canal运行相关参数 */
 public class CanalParameter implements Serializable {
-
     private static final long        serialVersionUID                   = -5893459662315430900L;
     private Long                     canalId;
 

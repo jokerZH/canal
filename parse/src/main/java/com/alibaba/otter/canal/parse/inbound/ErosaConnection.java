@@ -16,10 +16,10 @@ public interface ErosaConnection {
     /* 用于快速数据查找,和dump的区别在于，seek会只给出部分的数据 */
     public void seek(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException;
 
-    /* 开始dump数据 */
+    /* 开始dump数据 按照位点 */
     public void dump(String binlogfilename, Long binlogPosition, SinkFunction func) throws IOException;
 
-    /* 开始dump数据 */
+    /* 开始dump数据 按照时间 */
     public void dump(long timestamp, SinkFunction func) throws IOException;
 
     ErosaConnection fork();

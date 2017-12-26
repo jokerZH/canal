@@ -52,5 +52,4 @@ public class LogIdentity extends Position {
         } else if (!sourceAddress.equals(other.sourceAddress)) return false;
         return true;
     }
-
 }

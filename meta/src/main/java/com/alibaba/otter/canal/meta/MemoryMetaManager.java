@@ -17,15 +17,9 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.collect.MigrateMap;
 
-/**
- * 内存版实现
- * 
- * @author zebin.xuzb @ 2012-7-2
- * @version 1.0.0
- */
+/* 内存版实现  保存各个client的 batchId和位点的对应关系 TODO 一个client只能拉取一个mysql */
 public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMetaManager {
-
-    protected Map<String, List<ClientIdentity>>              destinations;
+    protected Map<String/*mysql*/, List<ClientIdentity/*clientId*/>>              destinations;
     protected Map<ClientIdentity, MemoryClientIdentityBatch> batches;
     protected Map<ClientIdentity, Position>                  cursors;
 
@@ -41,7 +35,6 @@ public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMe
         });
 
         cursors = new MapMaker().makeMap();
-
         destinations = MigrateMap.makeComputingMap(new Function<String, List<ClientIdentity>>() {
 
             public List<ClientIdentity> apply(String destination) {
@@ -60,6 +53,7 @@ public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMe
         }
     }
 
+    // 某个客户端订阅某个mysql的消息
     public synchronized void subscribe(ClientIdentity clientIdentity) throws CanalMetaManagerException {
         List<ClientIdentity> clientIdentitys = destinations.get(clientIdentity.getDestination());
 
@@ -70,11 +64,13 @@ public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMe
         clientIdentitys.add(clientIdentity);
     }
 
+    // 查看客户端是否订阅mysql
     public synchronized boolean hasSubscribe(ClientIdentity clientIdentity) throws CanalMetaManagerException {
         List<ClientIdentity> clientIdentitys = destinations.get(clientIdentity.getDestination());
         return clientIdentitys != null && clientIdentitys.contains(clientIdentity);
     }
 
+    // 客户端不订阅
     public synchronized void unsubscribe(ClientIdentity clientIdentity) throws CanalMetaManagerException {
         List<ClientIdentity> clientIdentitys = destinations.get(clientIdentity.getDestination());
         if (clientIdentitys != null && clientIdentitys.contains(clientIdentity)) {
@@ -98,8 +94,7 @@ public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMe
         return batches.get(clientIdentity).addPositionRange(positionRange);
     }
 
-    public void addBatch(ClientIdentity clientIdentity, PositionRange positionRange, Long batchId)
-                                                                                                  throws CanalMetaManagerException {
+    public void addBatch(ClientIdentity clientIdentity, PositionRange positionRange, Long batchId) throws CanalMetaManagerException {
         batches.get(clientIdentity).addPositionRange(positionRange, batchId);// 添加记录到指定batchId
     }
 
@@ -128,21 +123,17 @@ public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMe
     }
 
     // ============================
-
+    // 存储一个client的位点信息，以及batchId对应的mysql位点
     public static class MemoryClientIdentityBatch {
-
         private ClientIdentity           clientIdentity;
-        private Map<Long, PositionRange> batches          = new MapMaker().makeMap();
-        private AtomicLong               atomicMaxBatchId = new AtomicLong(1);
+        private Map<Long/*batchId*/, PositionRange> batches          = new MapMaker().makeMap();
+        private AtomicLong               atomicMaxBatchId = new AtomicLong(1);  // 分配batchId
 
         public static MemoryClientIdentityBatch create(ClientIdentity clientIdentity) {
             return new MemoryClientIdentityBatch(clientIdentity);
         }
 
-        public MemoryClientIdentityBatch(){
-
-        }
-
+        public MemoryClientIdentityBatch(){ }
         protected MemoryClientIdentityBatch(ClientIdentity clientIdentity){
             this.clientIdentity = clientIdentity;
         }
@@ -163,9 +154,7 @@ public class MemoryMetaManager extends AbstractCanalLifeCycle implements CanalMe
                 Long minBatchId = Collections.min(batches.keySet());
                 if (!minBatchId.equals(batchId)) {
                     // 检查一下提交的ack/rollback，必须按batchId分出去的顺序提交，否则容易出现丢数据
-                    throw new CanalMetaManagerException(String.format("batchId:%d is not the firstly:%d",
-                        batchId,
-                        minBatchId));
+                    throw new CanalMetaManagerException(String.format("batchId:%d is not the firstly:%d", batchId, minBatchId));
                 }
                 return batches.remove(batchId);
             } else {

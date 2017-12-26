@@ -269,15 +269,13 @@ public class MysqlEventParser extends AbstractMysqlEventParser implements CanalE
         }
 
         if (newRunningInfo == null) {
-            alarmMessage = "no standby config, just do nothing, will continue try:"
-                    + runningInfo.getAddress().toString();
+            alarmMessage = "no standby config, just do nothing, will continue try:" + runningInfo.getAddress().toString();
             logger.warn(alarmMessage);
             sendAlarm(destination, alarmMessage);
             return;
         } else {
             stop();
-            alarmMessage = "try to ha switch, old:" + runningInfo.getAddress().toString() + ", new:"
-                    + newRunningInfo.getAddress().toString();
+            alarmMessage = "try to ha switch, old:" + runningInfo.getAddress().toString() + ", new:" + newRunningInfo.getAddress().toString();
             logger.warn(alarmMessage);
             sendAlarm(destination, alarmMessage);
             runningInfo = newRunningInfo;

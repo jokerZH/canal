@@ -20,27 +20,21 @@ import com.alibaba.otter.canal.common.utils.JsonUtils;
 import com.alibaba.otter.canal.common.zookeeper.ZkClientx;
 import com.alibaba.otter.canal.common.zookeeper.ZookeeperPathUtils;
 
-/**
- * 针对server的running节点控制
- * 
- * @author jianghang 2012-11-22 下午02:59:42
- * @version 1.0.0
- */
+/* 针对server的running节点控制 */
 public class ServerRunningMonitor extends AbstractCanalLifeCycle {
-
     private static final Logger        logger       = LoggerFactory.getLogger(ServerRunningMonitor.class);
     private ZkClientx                  zkClient;
     private String                     destination;
     private IZkDataListener            dataListener;
     private BooleanMutex               mutex        = new BooleanMutex(false);
-    private volatile boolean           release      = false;
+    private volatile boolean           release      = false;    // 是否是下线
     // 当前服务节点状态信息
     private ServerRunningData          serverData;
     // 当前实际运行的节点状态信息
     private volatile ServerRunningData activeData;
     private ScheduledExecutorService   delayExector = Executors.newScheduledThreadPool(1);
     private int                        delayTime    = 5;
-    private ServerRunningListener      listener;
+    private ServerRunningListener      listener;    // 处理具体的事情
 
     public ServerRunningMonitor(ServerRunningData serverData){
         this();
@@ -66,6 +60,7 @@ public class ServerRunningMonitor extends AbstractCanalLifeCycle {
                 activeData = (ServerRunningData) runningData;
             }
 
+            // sever节点删除了，如果本机是原先执行的机器，则立刻创建新的节点，否则，等一段时间在抢占，给第一种情况留出时间
             public void handleDataDeleted(String dataPath) throws Exception {
                 MDC.put("destination", destination);
                 mutex.set(false);
@@ -127,6 +122,7 @@ public class ServerRunningMonitor extends AbstractCanalLifeCycle {
         processStop();
     }
 
+    // 如果节点已经存在，则报错
     private void initRunning() {
         if (!isStart()) {
             return;

@@ -9,12 +9,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 
-/**
- * @author zebin.xuzb @ 2012-6-19
- * @version 1.0.0
- */
+/* 一个消息，包含多个binlog */
 public class Message implements Serializable {
-
     private static final long      serialVersionUID = 1234034768477580009L;
 
     private long                   id;

@@ -12,7 +12,7 @@ import java.nio.channels.FileChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/* TODO */
+/* 用于读取文件的内容 */
 public class BufferedFileDataInput {
     private static final Logger logger = LoggerFactory.getLogger(BufferedFileDataInput.class);
 

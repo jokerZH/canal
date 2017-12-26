@@ -13,7 +13,7 @@ import com.google.common.collect.MapMaker;
  */
 public abstract class AbstractCanalGroupStore<T> extends AbstractCanalLifeCycle implements CanalGroupEventStore<T> {
 
-    protected Map<String, StoreInfo> stores = new MapMaker().makeMap();
+    protected Map<String/*name*/, StoreInfo> stores = new MapMaker().makeMap();
 
     @Override
     public void addStoreInfo(StoreInfo info) {

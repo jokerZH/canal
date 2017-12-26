@@ -6,11 +6,6 @@ package com.alibaba.otter.canal.instance.core;
  */
 public interface CanalInstanceGenerator {
 
-    /**
-     * 通过 destination 产生特定的 {@link CanalInstance}
-     * 
-     * @param destination
-     * @return
-     */
+    /* 通过 destination 产生特定的 {@link CanalInstance} */
     CanalInstance generate(String destination);
 }

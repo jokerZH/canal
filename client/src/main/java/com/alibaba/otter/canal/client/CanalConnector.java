@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 
-/* canal数据操作客户端 */
+/* canal数据操作客户端，TODO 用于拉取mysql binlog信息*/
 public interface CanalConnector {
 
     /* 链接对应的canal server */

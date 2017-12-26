@@ -25,31 +25,20 @@ import com.google.common.base.Function;
 import com.google.common.collect.MigrateMap;
 
 /**
- * Created by yinxiu on 17/3/18. Email: marklin.hz@gmail.com 基于文件刷新的log
  * position实现
- *
- * <pre>
  * 策略：
  * 1. 先写内存，然后定时刷新数据到File
  * 2. 数据采取overwrite模式(只保留最后一次)
- * </pre>
  */
 public class FileMixedLogPositionManager extends AbstractLogPositionManager {
-
     private final static Logger      logger       = LoggerFactory.getLogger(FileMixedLogPositionManager.class);
     private final static Charset     charset      = Charset.forName("UTF-8");
 
     private File                     dataDir;
-
     private Map<String, File>        dataFileCaches;
-
     private ScheduledExecutorService executorService;
-
-    private final LogPosition        nullPosition = new LogPosition() {
-                                                  };
-
+    private final LogPosition        nullPosition = new LogPosition() {};
     private MemoryLogPositionManager memoryLogPositionManager;
-
     private long                     period;
     private Set<String>              persistTasks;
 
@@ -66,7 +55,6 @@ public class FileMixedLogPositionManager extends AbstractLogPositionManager {
         this.dataDir = dataDir;
         this.period = period;
         this.memoryLogPositionManager = memoryLogPositionManager;
-
         this.dataFileCaches = MigrateMap.makeComputingMap(new Function<String, File>() {
 
             public File apply(String destination) {
@@ -147,7 +135,7 @@ public class FileMixedLogPositionManager extends AbstractLogPositionManager {
     }
 
     // ============================ helper method ======================
-
+    // 打开文件
     private File getDataFile(String destination) {
         File destinationMetaDir = new File(dataDir, destination);
         if (!destinationMetaDir.exists()) {
@@ -168,6 +156,7 @@ public class FileMixedLogPositionManager extends AbstractLogPositionManager {
         }
     }
 
+    // 将mysql对应的位点信息刷新到db中
     private void flushDataToFile(String destination) {
         flushDataToFile(destination, dataFileCaches.get(destination));
     }

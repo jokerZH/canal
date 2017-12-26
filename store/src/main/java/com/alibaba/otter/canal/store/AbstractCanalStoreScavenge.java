@@ -17,7 +17,6 @@ import com.alibaba.otter.canal.protocol.position.Position;
  * @version 1.0.0
  */
 public abstract class AbstractCanalStoreScavenge extends AbstractCanalLifeCycle implements CanalStoreScavenge {
-
     protected String           destination;
     protected CanalMetaManager canalMetaManager;
     protected boolean          onAck            = true;
@@ -30,11 +29,7 @@ public abstract class AbstractCanalStoreScavenge extends AbstractCanalLifeCycle 
         cleanUntil(position);
     }
 
-    /**
-     * 找出该destination中可被清理掉的position位置
-     * 
-     * @param destination
-     */
+    /* 找出该destination中可被清理掉的position位置 获得客户端消费的最小偏移，这之前的都可以消除 */
     private Position getLatestAckPosition(String destination) {
         List<ClientIdentity> clientIdentitys = canalMetaManager.listAllSubscribeInfo(destination);
         LogPosition result = null;
@@ -57,9 +52,7 @@ public abstract class AbstractCanalStoreScavenge extends AbstractCanalLifeCycle 
         return result;
     }
 
-    /**
-     * 找出一个最小的position位置
-     */
+    /* 找出一个最小的position位置 */
     private LogPosition min(LogPosition position1, LogPosition position2) {
         if (position1.getIdentity().equals(position2.getIdentity())) {
             // 首先根据文件进行比较

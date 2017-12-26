@@ -26,7 +26,6 @@ import com.alibaba.otter.canal.server.netty.handler.SessionHandler;
  * @version 1.0.0
  */
 public class CanalServerWithNetty extends AbstractCanalLifeCycle implements CanalServer {
-
     private CanalServerWithEmbedded embeddedServer;      // 嵌入式server
     private String                  ip;
     private int                     port;

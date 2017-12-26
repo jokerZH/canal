@@ -28,8 +28,7 @@ public class CanalConnectors {
 
     /* 创建带cluster模式的客户端链接，自动完成failover切换，服务器列表自动扫描 */
     public static CanalConnector newClusterConnector(String zkServers, String destination, String username, String password) {
-        ClusterCanalConnector canalConnector = new ClusterCanalConnector(username, password, destination,
-                new ClusterNodeAccessStrategy(destination, ZkClientx.getZkClient(zkServers)));
+        ClusterCanalConnector canalConnector = new ClusterCanalConnector(username, password, destination, new ClusterNodeAccessStrategy(destination, ZkClientx.getZkClient(zkServers)));
         canalConnector.setSoTimeout(30 * 1000);
         return canalConnector;
     }

@@ -10,6 +10,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.alibaba.otter.canal.store.model.Event;
 
 /**
+ *
+ * 让几个binlog源头按照时间先后输出
+ *
  * 时间归并控制
  * 
  * 大致设计：
@@ -22,7 +25,6 @@ import com.alibaba.otter.canal.store.model.Event;
  * 
  */
 public class TimelineBarrier implements GroupBarrier<Event> {
-
     protected int                 groupSize;
     protected ReentrantLock       lock           = new ReentrantLock();
     protected Condition           condition      = lock.newCondition();
@@ -34,11 +36,7 @@ public class TimelineBarrier implements GroupBarrier<Event> {
         threshold = Long.MIN_VALUE;
     }
 
-    /**
-     * 判断自己的timestamp是否可以通过
-     * 
-     * @throws InterruptedException
-     */
+    /* 判断自己的timestamp是否可以通过 */
     public void await(Event event) throws InterruptedException {
         long timestamp = getTimestamp(event);
         try {
@@ -52,12 +50,7 @@ public class TimelineBarrier implements GroupBarrier<Event> {
         }
     }
 
-    /**
-     * 判断自己的timestamp是否可以通过,带超时控制
-     * 
-     * @throws InterruptedException
-     * @throws TimeoutException
-     */
+    /* 判断自己的timestamp是否可以通过,带超时控制 */
     public void await(Event event, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
         long timestamp = getTimestamp(event);
         try {
@@ -101,11 +94,7 @@ public class TimelineBarrier implements GroupBarrier<Event> {
         condition.signalAll();
     }
 
-    /**
-     * 通知下一个minTimestamp数据出队列
-     * 
-     * @throws InterruptedException
-     */
+    /* 通知下一个minTimestamp数据出队列 */
     private void single(long timestamp) throws InterruptedException {
         lastTimestamps.add(timestamp);
 

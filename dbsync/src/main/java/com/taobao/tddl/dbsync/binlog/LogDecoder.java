@@ -57,7 +57,8 @@ import com.taobao.tddl.dbsync.binlog.event.mariadb.MariaGtidLogEvent;
  * while (event != null);
  * // no more events in buffer.
  * </pre>
- * 
+ *
+ * 解析binlog数据包
  * @author <a href="mailto:changyuan.lh@taobao.com">Changyuan.lh</a>
  * @version 1.0
  */

@@ -49,14 +49,14 @@ public class SimpleCanalConnector implements CanalConnector {
     private int soTimeout = 60000;  // milliseconds
     private String filter;          // 记录上一次的filter提交值,便于自动重试时提交
 
-    private final ByteBuffer readHeader = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
+    private final ByteBuffer readHeader = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);   // 用于读取数据包的长度
     private final ByteBuffer writeHeader = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
     private SocketChannel channel;
     private List<Compression> supportedCompressions = new ArrayList<Compression>();
     private ClientIdentity clientIdentity;          // TODO
     private ClientRunningMonitor runningMonitor;   // 运行控制
     private ZkClientx zkClientx;                    // zk client
-    private BooleanMutex mutex = new BooleanMutex(false);
+    private BooleanMutex mutex = new BooleanMutex(false);   // 互斥
     private volatile boolean connected = false;          // 代表connected是否已正常执行，因为有HA，不代表在工作中
     private boolean rollbackOnConnect = true;            // 是否在connect链接成功后，自动执行rollback操作
     private boolean rollbackOnDisConnect = false;        // 是否在connect链接成功后，自动执行rollback操作
@@ -370,6 +370,7 @@ public class SimpleCanalConnector implements CanalConnector {
         }
     }
 
+    // 从channel读取buffer长度的数据
     private void read(SocketChannel channel, ByteBuffer buffer) throws IOException {
         while (buffer.hasRemaining()) {
             int r = channel.read(buffer);
@@ -392,6 +393,7 @@ public class SimpleCanalConnector implements CanalConnector {
             runningMonitor.setListener(new ClientRunningListener() {
 
                 public InetSocketAddress processActiveEnter() {
+                    // 重连
                     InetSocketAddress address = doConnect();
                     mutex.set(true);
                     if (filter != null) { // 如果存在条件，说明是自动切换，基于上一次的条件订阅一次

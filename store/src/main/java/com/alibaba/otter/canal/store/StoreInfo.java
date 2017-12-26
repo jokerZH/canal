@@ -5,9 +5,8 @@ package com.alibaba.otter.canal.store;
  * @since 1.0.0
  */
 public class StoreInfo {
-
     private String storeName;
-    private String filter;
+    private String filter;      // TODO
 
     public String getStoreName() {
         return storeName;

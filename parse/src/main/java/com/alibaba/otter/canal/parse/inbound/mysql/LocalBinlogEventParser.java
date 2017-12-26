@@ -14,14 +14,8 @@ import com.alibaba.otter.canal.parse.support.AuthenticationInfo;
 import com.alibaba.otter.canal.protocol.position.EntryPosition;
 import com.alibaba.otter.canal.protocol.position.LogPosition;
 
-/**
- * 基于本地binlog文件的复制
- * 
- * @author jianghang 2012-6-21 下午04:07:33
- * @version 1.0.0
- */
+/* 基于本地binlog文件拉取binlog 对应 MysqlEventParser */
 public class LocalBinlogEventParser extends AbstractMysqlEventParser implements CanalEventParser {
-
     // 数据库信息
     private AuthenticationInfo masterInfo;
     private EntryPosition      masterPosition;        // binlog信息

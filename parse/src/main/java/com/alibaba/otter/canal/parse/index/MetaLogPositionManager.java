@@ -12,13 +12,9 @@ import com.alibaba.otter.canal.protocol.ClientIdentity;
 import com.alibaba.otter.canal.protocol.position.LogPosition;
 import com.alibaba.otter.canal.store.helper.CanalEventUtils;
 
-/**
- * Created by yinxiu on 17/3/18. Email: marklin.hz@gmail.com
- */
+/*  */
 public class MetaLogPositionManager extends AbstractLogPositionManager {
-
     private final static Logger    logger = LoggerFactory.getLogger(MetaLogPositionManager.class);
-
     private final CanalMetaManager metaManager;
 
     public MetaLogPositionManager(CanalMetaManager metaManager){

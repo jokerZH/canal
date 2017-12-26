@@ -14,15 +14,8 @@ import com.alibaba.otter.canal.protocol.position.PositionRange;
 import com.google.common.base.Function;
 import com.google.common.collect.MigrateMap;
 
-/**
- * 组合memory + zookeeper的使用模式
- *
- * @author jianghang 2012-7-11 下午03:58:00
- * @version 1.0.0
- */
-
+/* 组合memory + zookeeper的使用模式, zk部分是异步的 */
 public class MixedMetaManager extends MemoryMetaManager implements CanalMetaManager {
-
     private ExecutorService      executor;
     private ZooKeeperMetaManager zooKeeperMetaManager;
     @SuppressWarnings("serial")
@@ -104,8 +97,7 @@ public class MixedMetaManager extends MemoryMetaManager implements CanalMetaMana
         });
     }
 
-    public void updateCursor(final ClientIdentity clientIdentity, final Position position)
-                                                                                          throws CanalMetaManagerException {
+    public void updateCursor(final ClientIdentity clientIdentity, final Position position) throws CanalMetaManagerException {
         super.updateCursor(clientIdentity, position);
 
         // 异步刷新
@@ -127,8 +119,7 @@ public class MixedMetaManager extends MemoryMetaManager implements CanalMetaMana
         }
     }
 
-    public Long addBatch(final ClientIdentity clientIdentity, final PositionRange positionRange)
-                                                                                                throws CanalMetaManagerException {
+    public Long addBatch(final ClientIdentity clientIdentity, final PositionRange positionRange) throws CanalMetaManagerException {
         final Long batchId = super.addBatch(clientIdentity, positionRange);
         // 异步刷新
         executor.submit(new Runnable() {
@@ -140,8 +131,7 @@ public class MixedMetaManager extends MemoryMetaManager implements CanalMetaMana
         return batchId;
     }
 
-    public void addBatch(final ClientIdentity clientIdentity, final PositionRange positionRange, final Long batchId)
-                                                                                                                    throws CanalMetaManagerException {
+    public void addBatch(final ClientIdentity clientIdentity, final PositionRange positionRange, final Long batchId) throws CanalMetaManagerException {
         super.addBatch(clientIdentity, positionRange, batchId);
         // 异步刷新
         executor.submit(new Runnable() {
@@ -152,8 +142,7 @@ public class MixedMetaManager extends MemoryMetaManager implements CanalMetaMana
         });
     }
 
-    public PositionRange removeBatch(final ClientIdentity clientIdentity, final Long batchId)
-                                                                                             throws CanalMetaManagerException {
+    public PositionRange removeBatch(final ClientIdentity clientIdentity, final Long batchId) throws CanalMetaManagerException {
         PositionRange positionRange = super.removeBatch(clientIdentity, batchId);
         // 异步刷新
         executor.submit(new Runnable() {
@@ -168,7 +157,6 @@ public class MixedMetaManager extends MemoryMetaManager implements CanalMetaMana
 
     public void clearAllBatchs(final ClientIdentity clientIdentity) throws CanalMetaManagerException {
         super.clearAllBatchs(clientIdentity);
-
         // 异步刷新
         executor.submit(new Runnable() {
 

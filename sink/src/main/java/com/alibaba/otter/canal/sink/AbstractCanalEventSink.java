@@ -6,11 +6,10 @@ import java.util.List;
 import com.alibaba.otter.canal.common.AbstractCanalLifeCycle;
 import com.alibaba.otter.canal.filter.CanalEventFilter;
 
-/* TODO */
+/* 管理binlog的处理handler和 根据binlog的表名过滤 */
 public abstract class AbstractCanalEventSink<T> extends AbstractCanalLifeCycle implements CanalEventSink<T> {
-    protected CanalEventFilter                  filter;
+    protected CanalEventFilter                  filter; // 根据表名过滤
     protected List<CanalEventDownStreamHandler> handlers = new ArrayList<CanalEventDownStreamHandler>();
-
 
     public void setFilter(CanalEventFilter filter) { this.filter = filter; }
     public void addHandler(CanalEventDownStreamHandler handler) { this.handlers.add(handler); }

@@ -7,10 +7,10 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
 
-/*  */
+/* 表示一个客户端 */
 public class ClientIdentity implements Serializable {
     private String destination; // TODO
-    private short  clientId;    // TODO
+    private short  clientId;    // clientId
     private String filter;      // binlog过滤
 
     public ClientIdentity() {}

@@ -14,7 +14,6 @@ import com.alibaba.otter.canal.common.utils.CanalToStringStyle;
  * @version 1.0.0
  */
 public class Canal implements Serializable {
-
     private static final long serialVersionUID = 8333284022624682754L;
 
     private Long              id;

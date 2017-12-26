@@ -12,6 +12,8 @@ import com.alibaba.otter.canal.store.model.Event;
  * 
  * @author jianghang 2012-10-18 下午05:18:38
  * @version 1.0.0
+ *
+ * TODO
  */
 public class TimelineTransactionBarrier extends TimelineBarrier {
 

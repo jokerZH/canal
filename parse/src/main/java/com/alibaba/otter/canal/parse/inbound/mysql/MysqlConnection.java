@@ -28,6 +28,7 @@ import com.taobao.tddl.dbsync.binlog.LogEvent;
 import com.taobao.tddl.dbsync.binlog.LogPosition;
 import com.taobao.tddl.dbsync.binlog.event.FormatDescriptionLogEvent;
 
+// 用于从mysql拉取数据
 public class MysqlConnection implements ErosaConnection {
     private static final Logger logger  = LoggerFactory.getLogger(MysqlConnection.class);
 
@@ -130,9 +131,7 @@ public class MysqlConnection implements ErosaConnection {
         HeaderPacket binlogDumpHeader = new HeaderPacket();
         binlogDumpHeader.setPacketBodyLength(cmdBody.length);
         binlogDumpHeader.setPacketSequenceNumber((byte) 0x00);
-        PacketManager.write(connector.getChannel(), new ByteBuffer[] { ByteBuffer.wrap(binlogDumpHeader.toBytes()),
-                ByteBuffer.wrap(cmdBody) });
-
+        PacketManager.write(connector.getChannel(), new ByteBuffer[] { ByteBuffer.wrap(binlogDumpHeader.toBytes()), ByteBuffer.wrap(cmdBody) });
         connector.setDumping(true);
     }
 

@@ -13,7 +13,6 @@ import com.alibaba.otter.canal.client.CanalNodeAccessStrategy;
  * @version 1.0.0
  */
 public class SimpleNodeAccessStrategy implements CanalNodeAccessStrategy {
-
     private List<SocketAddress> nodes = new ArrayList<SocketAddress>();
     private int                 index = 0;
 

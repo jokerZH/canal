@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.taobao.tddl.dbsync.binlog.LogFetcher;
 
-/* 基于socket的logEvent实现 */
+/* 基于socket的logEvent实现, 知道整个binlog数据包层面 */
 public class DirectLogFetcher extends LogFetcher {
     protected static final Logger logger = LoggerFactory.getLogger(DirectLogFetcher.class);
 
@@ -30,7 +30,7 @@ public class DirectLogFetcher extends LogFetcher {
     public DirectLogFetcher(final int initialCapacity, final float growthFactor) { super(initialCapacity, growthFactor); }
     public void start(SocketChannel channel) throws IOException { this.channel = channel; }
 
-    // 获得一个binlog 数据包
+    // 获得一个完整的binlog数据包
     public boolean fetch() throws IOException {
         try {
             // Fetching packet header from input.
@@ -50,6 +50,7 @@ public class DirectLogFetcher extends LogFetcher {
             // Detecting error code.
             final int mark = getUint8(NET_HEADER_SIZE);
             if (mark != 0) {
+                // 异常情况
                 if (mark == 255) // error from master
                 {
                     // Indicates an error, for example trying to fetch from
@@ -113,6 +114,7 @@ public class DirectLogFetcher extends LogFetcher {
         }
     }
 
+    // 从socket读取数据到buffer中
     private final boolean fetch0(final int off, final int len) throws IOException {
         ensureCapacity(off + len);
 

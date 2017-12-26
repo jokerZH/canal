@@ -16,7 +16,6 @@ import com.googlecode.aviator.AviatorEvaluator;
  * @author jianghang 2012-7-23 上午10:46:32
  */
 public class AviaterELFilter implements CanalEventFilter<CanalEntry.Entry> {
-
     public static final String ROOT_KEY = "entry";
     private String             expression;
 
@@ -33,5 +32,4 @@ public class AviaterELFilter implements CanalEventFilter<CanalEntry.Entry> {
         env.put(ROOT_KEY, entry);
         return (Boolean) AviatorEvaluator.execute(expression, env);
     }
-
 }

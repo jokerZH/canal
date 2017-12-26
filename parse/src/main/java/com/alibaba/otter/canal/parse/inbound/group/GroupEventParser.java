@@ -35,6 +35,7 @@ public class GroupEventParser extends AbstractCanalLifeCycle implements CanalEve
             eventParsers.add(eventParser);
         }
     }
+
     public void setEventParsers(List<CanalEventParser> eventParsers) { this.eventParsers = eventParsers; }
     public void removeEventParser(CanalEventParser eventParser) { eventParsers.remove(eventParser); }
     public List<CanalEventParser> getEventParsers() { return eventParsers; }

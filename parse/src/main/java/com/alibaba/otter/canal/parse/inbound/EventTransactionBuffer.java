@@ -18,10 +18,9 @@ public class EventTransactionBuffer extends AbstractCanalLifeCycle {
     private int indexMask;
     private CanalEntry.Entry[] entries;
 
-    private AtomicLong putSequence = new AtomicLong(INIT_SQEUENCE); // 代表当前put操作最后一次写操作发生的位置
-    private AtomicLong flushSequence = new AtomicLong(INIT_SQEUENCE); // 代表满足flush条件后最后一次数据flush的时间
-
-    private TransactionFlushCallback flushCallback;
+    private AtomicLong putSequence = new AtomicLong(INIT_SQEUENCE);     // 代表当前put操作最后一次写操作发生的位置
+    private AtomicLong flushSequence = new AtomicLong(INIT_SQEUENCE);   // 代表满足flush条件后最后一次数据flush的时间
+    private TransactionFlushCallback flushCallback;                     // 负责处理binlog数据
 
     public EventTransactionBuffer() { }
     public EventTransactionBuffer(TransactionFlushCallback flushCallback) { this.flushCallback = flushCallback; }

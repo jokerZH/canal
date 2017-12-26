@@ -14,7 +14,7 @@ import com.alibaba.otter.canal.parse.inbound.HeartBeatCallback;
 public class HeartBeatHAController extends AbstractCanalLifeCycle implements CanalHAController, HeartBeatCallback {
     private static final Logger logger = LoggerFactory.getLogger(HeartBeatHAController.class);
 
-    private int detectingRetryTimes = 3;    // default 3 times
+    private int detectingRetryTimes = 3;    // 最多失败次数
     private int failedTimes = 0;            // 当前失败次数
     private boolean switchEnable = false;   // 是否自动切换
     private CanalHASwitchable eventParser;  // 用户db故障的时候 切换db

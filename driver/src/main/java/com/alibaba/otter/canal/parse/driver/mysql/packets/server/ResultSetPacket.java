@@ -4,11 +4,11 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-// 表示一个column字段
+// 表示resultSet
 public class ResultSetPacket {
     private SocketAddress     sourceAddress;
     private List<FieldPacket> fieldDescriptors = new ArrayList<FieldPacket>();
-    private List<String>      fieldValues      = new ArrayList<String>();
+    private List<String>      fieldValues      = new ArrayList<String>();   // 多个数据是追加的形式写入
 
     public void setFieldDescriptors(List<FieldPacket> fieldDescriptors) { this.fieldDescriptors = fieldDescriptors; }
     public List<FieldPacket> getFieldDescriptors() { return fieldDescriptors; }

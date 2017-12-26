@@ -34,36 +34,33 @@ import com.alibaba.otter.canal.protocol.position.LogPosition;
 import com.alibaba.otter.canal.sink.CanalEventSink;
 import com.alibaba.otter.canal.sink.exception.CanalSinkException;
 
-/* 抽象的EventParser, 最大化共用mysql/oracle版本的实现 */
+/* 抽象的EventParser, 最大化共用mysql/oracle版本的实现  oracle呢。。。 */
 public abstract class AbstractEventParser<EVENT> extends AbstractCanalLifeCycle implements CanalEventParser<EVENT> {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected CanalLogPositionManager logPositionManager = null;    // 位点管理
-    protected CanalEventSink<List<CanalEntry.Entry>> eventSink = null;  // 处理entry逻辑
+    protected CanalLogPositionManager logPositionManager = null;        // 位点管理
+    protected CanalEventSink<List<CanalEntry.Entry>> eventSink = null;  // 处理entry逻辑,被调用,一次事务被调用一次
     protected CanalEventFilter eventFilter = null;      // 过滤
     protected CanalEventFilter eventBlackFilter = null; // 黑名单过滤
-
-    private CanalAlarmHandler alarmHandler = null;      // TODO
+    private CanalAlarmHandler alarmHandler = null;      // 报警
 
     // 统计参数
     protected AtomicBoolean profilingEnabled = new AtomicBoolean(false);    // profile开关参数
     protected AtomicLong receivedEventCount = new AtomicLong();             // TODO
     protected AtomicLong parsedEventCount = new AtomicLong();               // TODO
-    protected AtomicLong consumedEventCount = new AtomicLong();             // TODO
+    protected AtomicLong consumedEventCount = new AtomicLong();             // 处理的binlog个数
     protected long parsingInterval = -1;
-    protected long processingInterval = -1;
+    protected long processingInterval = -1;     // 处理一个事任的消息的延时
 
     // 认证信息
-    protected volatile AuthenticationInfo runningInfo;
-    protected String destination;
+    protected volatile AuthenticationInfo runningInfo;  // 权限信息
+    protected String destination;                       // mysql信息
 
     // binLogParser
-    protected BinlogParser binlogParser = null; // 解析成entry结构
-
+    protected BinlogParser binlogParser = null;         // 解析成entry结构
     protected Thread parseThread = null;
 
     protected Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
-
         public void uncaughtException(Thread t,
                                       Throwable e) {
             logger.error("parse events has an error", e);
@@ -75,7 +72,7 @@ public abstract class AbstractEventParser<EVENT> extends AbstractCanalLifeCycle 
     protected AtomicBoolean needTransactionPosition = new AtomicBoolean(false);
     protected long lastEntryTime = 0L;
     protected volatile boolean detectingEnable = true;      // 是否开启心跳检查
-    protected Integer detectingIntervalInSeconds = 3;                                       // 检测频率
+    protected Integer detectingIntervalInSeconds = 3;       // 检测频率
     protected volatile Timer timer;
     protected TimerTask heartBeatTimerTask;
     protected Throwable exception = null;
@@ -156,6 +153,7 @@ public abstract class AbstractEventParser<EVENT> extends AbstractCanalLifeCycle 
                         erosaConnection.reconnect();
 
                         final SinkFunction sinkHandler = new SinkFunction<EVENT>() {
+                            // 处理binlog的过程
 
                             private LogPosition lastPosition;
 
@@ -357,7 +355,7 @@ public abstract class AbstractEventParser<EVENT> extends AbstractCanalLifeCycle 
         // do nothing
     }
 
-    /* 开始心跳检测过程  */
+    /* 定时发送心跳binlog */
     protected void startHeartBeat(ErosaConnection connection) {
         lastEntryTime = 0L; // 初始化
         if (timer == null) {// lazy初始化一下

@@ -11,6 +11,7 @@ import com.alibaba.otter.canal.parse.inbound.AbstractEventParser;
 import com.alibaba.otter.canal.parse.inbound.BinlogParser;
 import com.alibaba.otter.canal.parse.inbound.mysql.dbsync.LogEventConvert;
 
+// 设置解析binlog数据部分的逻辑
 public abstract class AbstractMysqlEventParser extends AbstractEventParser {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static final long BINLOG_START_OFFEST = 4L;

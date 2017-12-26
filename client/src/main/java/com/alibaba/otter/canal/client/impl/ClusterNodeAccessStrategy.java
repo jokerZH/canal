@@ -17,31 +17,22 @@ import com.alibaba.otter.canal.common.zookeeper.ZookeeperPathUtils;
 import com.alibaba.otter.canal.common.zookeeper.running.ServerRunningData;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 
-/**
- * 集群模式的调度策略
- * 
- * @author jianghang 2012-12-3 下午10:01:04
- * @version 1.0.0
- */
+/* 集群模式的调度策略 */
 public class ClusterNodeAccessStrategy implements CanalNodeAccessStrategy {
-    private IZkChildListener                 childListener;                                      // 监听所有的服务器列表
-    private IZkDataListener                  dataListener;                                       // 监听当前的工作节点
+    private IZkChildListener                 childListener; // 监听集群中所有的服务器列表
+    private IZkDataListener                  dataListener;  // 监听当前拉取binlog的服务器
     private ZkClientx                        zkClient;
-    private volatile List<InetSocketAddress> currentAddress = new ArrayList<InetSocketAddress>();
-    private volatile InetSocketAddress       runningAddress = null;
+    private volatile List<InetSocketAddress/**/> currentAddress = new ArrayList<InetSocketAddress>();
+    private volatile InetSocketAddress       runningAddress = null; //当前正在运行的服务端
 
     public ClusterNodeAccessStrategy(String destination, ZkClientx zkClient){
         this.zkClient = zkClient;
         childListener = new IZkChildListener() {
-
             public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
                 initClusters(currentChilds);
             }
-
         };
-
         dataListener = new IZkDataListener() {
-
             public void handleDataDeleted(String dataPath) throws Exception {
                 runningAddress = null;
             }
@@ -49,7 +40,6 @@ public class ClusterNodeAccessStrategy implements CanalNodeAccessStrategy {
             public void handleDataChange(String dataPath, Object data) throws Exception {
                 initRunning(data);
             }
-
         };
 
         String clusterPath = ZookeeperPathUtils.getDestinationClusterRoot(destination);
@@ -76,6 +66,7 @@ public class ClusterNodeAccessStrategy implements CanalNodeAccessStrategy {
         }
     }
 
+    // 更新集群中的机器
     private void initClusters(List<String> currentChilds) {
         if (currentChilds == null || currentChilds.isEmpty()) {
             currentAddress = new ArrayList<InetSocketAddress>();
@@ -93,6 +84,7 @@ public class ClusterNodeAccessStrategy implements CanalNodeAccessStrategy {
         }
     }
 
+    // 拉binlog的服务器变了，重新来过
     private void initRunning(Object data) {
         if (data == null) {
             return;

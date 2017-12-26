@@ -27,7 +27,6 @@ import com.alibaba.otter.canal.store.model.Event;
  * Created with Intellig IDEA. Author: yinxiu Date: 2016-01-07 Time: 22:26
  */
 public class AbstractCanalInstance extends AbstractCanalLifeCycle implements CanalInstance {
-
     private static final Logger                      logger = LoggerFactory.getLogger(AbstractCanalInstance.class);
 
     protected Long                                   canalId;                                                      // 和manager交互唯一标示
